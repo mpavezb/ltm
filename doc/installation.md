@@ -25,7 +25,6 @@ git clone -b 26compat https://github.com/mongodb/mongo-cxx-driver.git
 sudo apt-get install scons
 cd mongo-cxx-driver
 sudo scons --prefix=/usr/local/ --full --use-system-boost --disable-warnings-as-errors
-
 ```
 
 Now, you should now be able to compile the packages using catkin.
@@ -46,20 +45,23 @@ The deb install is not complete and does not provide the required plugin for mon
 
 ```bash
 # get warehouse_ros_mongo repo
-git clone https://github.com/ros-planning/warehouse_ros_mongo.git
-
+git clone https://github.com/mpavezb/warehouse_ros_mongo.git
 ```
 
 
-
-
-## Verify installation
-
+#### Verify installation
 
 ```bash
-rosrun warehouse_ros_mongo mongo_wrapper_ros.py
+roscd && cd ..
 
+# set up server
+catkin_make
+rosrun warehouse_ros_mongo mongo_wrapper_ros.py
 roslaunch warehouse_ros_mongo warehouse.launch --screen
+
+# run tests
+catkin_make tests
+rosrun warehouse_ros_mongo test_warehouse_ros_mongo_cpp 
 ```
 
 ## Useful Commands
@@ -71,4 +73,16 @@ kill -9 <pid>
 
 # kill mongodb server
 kill -9 $(pidof mongod)
+```
+
+### Install LTM repository
+
+```bash
+# download
+roscd && cd ../src
+git clone https://github.com/mpavezb/ltm.git
+
+# compile
+cd .. 
+catkin_make
 ```
