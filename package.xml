@@ -1,0 +1,22 @@
+<package format="2">
+    <name>ltm</name>
+    <version>0.0.0</version>
+    <description>
+        Long Term Memory for robots using ROS. Thesis project.
+    </description>
+    <author email="matias.pavez@ing.uchile.cl">Matías Pavez</author>
+    <maintainer email="matias.pavez@ing.uchile.cl">Matías Pavez</maintainer>
+
+    <license>GPL-3.0</license>
+    <url>https://github.com/mpavezb/ltm</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>warehouse_ros</depend>
+    <depend>rospy</depend>
+    <depend>roscpp</depend>
+    <depend>std_msgs</depend>
+
+    <test_depend>rostest</test_depend>
+    <test_depend>gtest</test_depend>
+</package>
