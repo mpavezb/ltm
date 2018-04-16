@@ -1,0 +1,77 @@
+
+
+# unique identifier
+uid: 0
+
+# leaf | episode | context
+type: "leaf"
+
+# extra information
+info:
+  source: "text-yaml"
+  episode_number: 1
+  n_usages: 0
+  creation_date: "UTC_2018/04/16_18:25:11:345612315"
+  last_access: "UTC_2018/04/16_18:25:11:345612315"
+  software:
+    ltm_version: "0.0.0"
+    ros_version: "kinetic"
+    os: "ubuntu"
+    os_version: "16.04"
+
+tags: ["sample", "hri", "vision", "talk"]
+
+
+when:
+  start: "UTC_2018/04/16_18:19:16:310383968"
+  end:   "UTC_2018/04/16_18:25:11:345612315"
+
+where:
+  pose:
+    position:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+    orientation:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      w: 1.0
+    map: "amtc"
+  location:
+    name: "living room"
+    map: "amtc"
+
+what:
+  parent_id: ""
+  children_ids: []
+  specific_features:
+    A: 1
+    B: 2
+  streams:
+    imgs: binary_data
+    sound: binary_data
+  entities:
+    mike_01: ...
+    glass_23: ...
+
+relevance:
+  # elapsed time
+  historic:
+    value:
+    last_update: "2018/04/16"
+    next_update: "2018/04/16"
+
+  # emotions
+  emotional:
+    original:
+      software: "fake"
+      version: "0.0.0"
+      registered: []
+    emotion: "happy"
+    value: 0.5
+
+
+# Useful commands:
+# $ date --utc +'%Z_%Y/%m/%d_%H:%M:%S:%N'
+# $ date +'%Y/%m/%d'
