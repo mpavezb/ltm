@@ -3,7 +3,7 @@
     "type": "leaf",
     "info":
     {
-        "source": "text-yaml",
+        "source": "text-json",
         "episode_number": 1,
         "n_usages": 0,
         "creation_date": "UTC_2018/04/16_18:25:11:345612315",
