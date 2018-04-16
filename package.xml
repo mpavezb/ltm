@@ -1,4 +1,8 @@
+<?xml version="1.0"?>
 <package format="2">
+
+    <!-- PACKAGE INFORMATION -->
+    <!-- - - - - - - - - - - -->
     <name>ltm</name>
     <version>0.0.0</version>
     <description>
@@ -8,15 +12,38 @@
     <maintainer email="matias.pavez@ing.uchile.cl">Matías Pavez</maintainer>
 
     <license>GPL-3.0</license>
-    <url>https://github.com/mpavezb/ltm</url>
+    <url type="repository">https://github.com/mpavezb/ltm</url>
 
+
+    <!-- SYSTEM DEPENDENCIES -->
+    <!-- - - - - - - - - - - -->
+
+    <!--  build system tool to build this package -->
     <buildtool_depend>catkin</buildtool_depend>
 
+    <!-- build, export, and execution dependencies -->
     <depend>warehouse_ros</depend>
     <depend>rospy</depend>
     <depend>roscpp</depend>
     <depend>std_msgs</depend>
 
+    <!-- build dependencies -->
+    <build_depend>message_generation</build_depend>
+
+    <!-- export dependencies -->
+    <!-- -->
+
+    <!-- excution dependencies -->
+    <exec_depend>message_runtime</exec_depend>
+
+    <!-- test dependencies -->
     <test_depend>rostest</test_depend>
     <test_depend>gtest</test_depend>
+
+    <!-- documentation dependencies -->
+    <!-- -->
+
+    <export>
+    </export>
+
 </package>
