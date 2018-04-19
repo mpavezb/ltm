@@ -46,6 +46,9 @@ The deb install is not complete and does not provide the required plugin for mon
 ```bash
 # get warehouse_ros_mongo repo
 git clone https://github.com/mpavezb/warehouse_ros_mongo.git
+
+# dependency for warehouse_ros_mongo
+sudo apt-get install ros-kinetic-warehouse-ros
 ```
 
 
