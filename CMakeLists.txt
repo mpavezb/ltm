@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
     roscpp
     rostest
     std_msgs
-    warehouse_ros
+    warehouse_ros_mongo
     message_generation
 )
 
