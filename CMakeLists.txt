@@ -11,8 +11,10 @@ find_package(catkin REQUIRED
     roscpp
     rostest
     std_msgs
-    warehouse_ros_mongo
+    geometry_msgs
+    sensor_msgs
     message_generation
+    warehouse_ros_mongo
 )
 
 catkin_python_setup()
@@ -24,10 +26,15 @@ catkin_python_setup()
 # Generate messages in the 'msg' folder
 add_message_files(
     FILES
+    Date.msg
     Episode.msg
+    Info.msg
     What.msg
     Where.msg
     When.msg
+    Relevance.msg
+    EmotionalRelevance.msg
+    HistoricalRelevance.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -48,6 +55,8 @@ add_message_files(
 generate_messages(
     DEPENDENCIES
     std_msgs
+    geometry_msgs
+    sensor_msgs
 )
 
 

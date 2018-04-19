@@ -26,6 +26,8 @@
     <depend>rospy</depend>
     <depend>roscpp</depend>
     <depend>std_msgs</depend>
+    <depend>geometry_msgs</depend>
+    <depend>sensor_msgs</depend>
 
     <!-- build dependencies -->
     <build_depend>message_generation</build_depend>
