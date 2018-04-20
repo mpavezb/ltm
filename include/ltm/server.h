@@ -23,9 +23,11 @@ namespace ltm {
     private:
         std::string _name;
         ros::ServiceServer _status_service;
+        ros::ServiceServer _drop_db_service;
         ros::ServiceServer _append_dummies_service;
         warehouse_ros_mongo::MongoDatabaseConnection _conn;
 
+        void show_status();
 
     public:
 
@@ -35,8 +37,9 @@ namespace ltm {
 
 //        EpisodeCollection getCollection();
 
-        bool appendDummies(std_srvs::Trigger::Request  &req, std_srvs::Trigger::Response &res);
-        bool status(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+        bool append_dummies_service(std_srvs::Trigger::Request  &req, std_srvs::Trigger::Response &res);
+        bool status_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+        bool drop_db_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
     };
 
 } /* namespace ltm */

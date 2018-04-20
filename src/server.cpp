@@ -32,36 +32,36 @@ namespace ltm {
         _conn.setParams("localhost", 27017, 60.0);
         _conn.connect();
 
-        // clear existing data
-        _conn.dropDatabase("ltm_db");
-
-        // open the collection
-
-
-        // indexes
-        // collection.
-
         // Announce services
-        _status_service = priv.advertiseService("status", &Server::status, this);
-        _append_dummies_service = priv.advertiseService("append_dummies", &Server::appendDummies, this);
+        _status_service = priv.advertiseService("status", &Server::status_service, this);
+        _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
+        _append_dummies_service = priv.advertiseService("append_dummies", &Server::append_dummies_service, this);
 
         ROS_INFO("LTM server is up and running.");
+        show_status();
     }
 
     Server::~Server() {}
 
-    bool Server::status(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+    void Server::show_status() {
         EpisodeCollection _coll = _conn.openCollection<ltm::Episode>("ltm_db", "episodes");
-        ROS_INFO_STREAM(std::endl
-                << std::endl << "LTM server status"
-                << std::endl << "================="
-                << std::endl << "Number of episodes: " << _coll.count()
-                << std::endl
-        );
+        ROS_INFO_STREAM("DB has " << _coll.count() << " entries.");
+    }
+
+    bool Server::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        show_status();
         return true;
     }
 
-    bool Server::appendDummies(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
+    bool Server::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        // clear existing data
+        ROS_INFO("Dropping DB: ltm_db");
+        _conn.dropDatabase("ltm_db");
+        show_status();
+        return true;
+    }
+
+    bool Server::append_dummies_service(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
         EpisodeCollection _coll = _conn.openCollection<ltm::Episode>("ltm_db", "episodes");
 
         // create dummy episodes
@@ -84,6 +84,8 @@ namespace ltm {
 
         res.success = (u_int8_t) true;
         res.message = "Appended 7 msgs";
+
+        ROS_INFO_STREAM("Appended 7 episodes. Now DB has: " << _coll.count() << " entries.");
         return true;
     }
 }
