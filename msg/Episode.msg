@@ -1,6 +1,6 @@
 # Episode information
 uint32 uid
-string type
+uint8 type
 string[] tags
 ltm/Info info
 
