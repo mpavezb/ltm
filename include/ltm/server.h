@@ -6,6 +6,7 @@
 #include <iostream>
 #include <ros/ros.h>
 #include <ltm/Episode.h>
+#include <ltm/AddEpisode.h>
 #include <std_srvs/Empty.h>
 #include <std_srvs/Trigger.h>
 
@@ -24,10 +25,12 @@ namespace ltm {
         std::string _name;
         ros::ServiceServer _status_service;
         ros::ServiceServer _drop_db_service;
+        ros::ServiceServer _add_episode_service;
         ros::ServiceServer _append_dummies_service;
         warehouse_ros_mongo::MongoDatabaseConnection _conn;
 
         void show_status();
+        std::string to_short_string(const ltm::Episode& episode);
 
     public:
 
@@ -37,8 +40,20 @@ namespace ltm {
 
 //        EpisodeCollection getCollection();
 
+        // ==========================================================
+        // ROS Services
+        // ==========================================================
+
+        /**/
+        bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);
+
+        /**/
         bool append_dummies_service(std_srvs::Trigger::Request  &req, std_srvs::Trigger::Response &res);
+
+        /**/
         bool status_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+
+        /**/
         bool drop_db_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
     };
 

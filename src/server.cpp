@@ -33,6 +33,7 @@ namespace ltm {
         _conn.connect();
 
         // Announce services
+        _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
         _status_service = priv.advertiseService("status", &Server::status_service, this);
         _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
         _append_dummies_service = priv.advertiseService("append_dummies", &Server::append_dummies_service, this);
@@ -46,6 +47,28 @@ namespace ltm {
     void Server::show_status() {
         EpisodeCollection _coll = _conn.openCollection<ltm::Episode>("ltm_db", "episodes");
         ROS_INFO_STREAM("DB has " << _coll.count() << " entries.");
+    }
+
+    std::string Server::to_short_string(const ltm::Episode &episode) {
+        std::stringstream ss;
+        ss << "<"
+           << "uid:" << episode.uid << ", "
+           << "type:" << (int) episode.type << ", "
+           << "emotion:" << episode.relevance.emotional.emotion
+           << ">";
+        return ss.str();
+    }
+
+    // ==========================================================
+    // ROS Services
+    // ==========================================================
+
+    bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
+        EpisodeCollection _coll = _conn.openCollection<ltm::Episode>("ltm_db", "episodes");
+        _coll.insert(req.episode, makeMetadata(_coll, req.episode));
+        ROS_INFO_STREAM("Added episode " << to_short_string(req.episode));
+        show_status();
+        return true;
     }
 
     bool Server::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
