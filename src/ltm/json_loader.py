@@ -19,6 +19,7 @@ class LoaderNode(object):
         rospy.loginfo("Using filename: " + self.filename)
 
         # clients
+
         self.add_episode_client = rospy.ServiceProxy('ltm_server/add_episode', AddEpisode)
 
         # wait for services
@@ -40,13 +41,9 @@ class LoaderNode(object):
 
 
 def main():
-    rospy.init_node("ltm_json_loader")
-    node = LoaderNode()
-    node.load_json()
-
-
-if __name__ == '__main__':
     try:
-        main()
+        rospy.init_node("ltm_json_loader")
+        node = LoaderNode()
+        node.load_json()
     except rospy.ROSInterruptException:
         pass
