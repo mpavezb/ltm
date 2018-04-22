@@ -1,0 +1,39 @@
+{
+    "uid": 6,
+    "type": 0,
+    "parent_id": 4,
+    "children_ids": [],
+    "tags": ["look_for_crowd"],
+    "info": "~",
+    "when": {
+        "start": "UTC_2018/04/20_18:00:31.0",
+        "end":   "UTC_2018/04/20_18:01:12.0"
+    },
+    "where": {
+        "position": {
+          "x":  1.0,
+          "y":  1.0,
+          "z":  0.0
+        },
+        "frame_id": "/map",
+        "map_name": "arena_1",
+        "location": "living room",
+        "area": "arena_1"
+    },
+    "what": "~",
+    "relevance": {
+        "historical": {
+            "value": 1,
+            "last_update": "2018/04/20",
+            "next_update": "2018/04/20"
+        },
+        "emotional": {
+            "software": "fake emotion engine",
+            "software_version": "1.0.0",
+            "registered_emotions": ["JOY", "TRUST", "FEAR", "SURPRISE", "SADNESS", "DISGUST", "ANGER", "ANTICIPATION"],
+            "registered_values": [0.05, 0.0, 0.0, 0.2, 0.0, 0.0, 0.0, 0.1 ],
+            "emotion": 3,
+            "value": 0.2
+        }
+    }
+}
