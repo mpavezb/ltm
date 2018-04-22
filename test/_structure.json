@@ -6,15 +6,13 @@
     "tags": ["sample", "hri", "vision", "talk"],
     "info":
     {
-        "episode_number": 1,
         "n_usages": 0,
         "source": "text-json",
         "creation_date": "UTC_2018/04/16_18:25:11.345612",
         "last_access": "UTC_2018/04/16_18:25:11.345612",
         "ltm_version": "0.0.0",
         "ros_version": "kinetic",
-        "os": "ubuntu",
-        "os_version": "16.04"
+        "os_version": "ubuntu 16.04"
     },
     "when": {
         "start": "UTC_2018/04/16_18:19:16.310383",

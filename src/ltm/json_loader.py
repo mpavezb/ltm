@@ -3,6 +3,8 @@
 __author__ = 'Matías Pavez'
 __email__ = 'matias.pavez@ing.uchile.cl'
 
+from os import listdir
+from os.path import abspath, isdir, isfile, join
 import rospy
 from ltm.json_parser import JsonParser
 from ltm.srv import *
@@ -11,17 +13,34 @@ from ltm.srv import *
 class LoaderNode(object):
 
     def __init__(self):
-        # parameters
-        self.source = rospy.get_param("~source", None)
-        if self.source is None:
-            raise ValueError("Filename cannot be empty.")
-        rospy.loginfo("Using filename: " + self.source)
+        self._is_file = None
+        self.loader = JsonParser()
 
-        # clients
+        # ROS parameters
+        self.source = rospy.get_param("~source", None)
+        self.setup_path()
+
+        # ROS clients
+        rospy.loginfo("Waiting for LTM server to be up.")
         self.add_episode_client = rospy.ServiceProxy('ltm_server/add_episode', AddEpisode)
 
-        # wait for services
-        rospy.wait_for_service('ltm_server/add_episode')
+        # Wait for ROS services
+        self.add_episode_client.wait_for_service()
+
+    def setup_path(self):
+        if self.source is None:
+            rospy.logerr("Source parameter cannot be empty.")
+            exit(1)
+        self.source = abspath(self.source)
+        if isdir(self.source):
+            self._is_file = False
+            rospy.loginfo("Loading directory: " + self.source)
+        elif isfile(self.source):
+            self._is_file = True
+            rospy.loginfo("Loading JSON file: " + self.source)
+        else:
+            rospy.logerr("Source parameter is not a valid filename or directory: '" + self.source + "'")
+            exit(1)
 
     def save(self, episode):
         try:
@@ -32,10 +51,26 @@ class LoaderNode(object):
             print "Service call failed: %s" % e
 
     def load_json(self):
-        loader = JsonParser()
-        data = loader.load_json(self.source)
-        episode = loader.json_to_episode(data)
+        if self._is_file:
+            self.load_file(self.source)
+        else:
+            self.load_folder()
+
+    def load_file(self, filename):
+        data = self.loader.load_json(filename)
+        episode = self.loader.json_to_episode(data)
         self.save(episode)
+
+    def load_folder(self):
+        files = [f for f in listdir(self.source) if isfile(join(self.source, f)) and f.endswith('.json')]
+        files.sort()
+        if not files:
+            rospy.logwarn("No .json files were found.")
+            return
+        for filename in files:
+            full_filename = join(self.source, filename)
+            rospy.loginfo(" - loading json: " + filename)
+            self.load_file(full_filename)
 
 
 def main():

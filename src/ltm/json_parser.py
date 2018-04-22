@@ -15,6 +15,9 @@ from rospy import Time
 from ltm.msg import *
 from geometry_msgs.msg import Point
 
+from platform import uname
+from os import environ
+
 
 class JsonParser(object):
 
@@ -65,77 +68,109 @@ class JsonParser(object):
         episode.relevance = self.json_to_field_relevance(data['relevance'])
         return episode
 
+    @staticmethod
+    def auto_info():
+        info = Info()
+        info.n_usages = 0
+        info.source = "text-json"
+        info.creation_date = Time.now()
+        info.last_access = Time.now()
+        info.ltm_version = "0.0.0"
+        info.ros_version = environ.get("ROS_DISTRO")
+        info.os_version = ''.join(uname())
+        return info
+
+    @staticmethod
+    def get_data(field, name, data, fun=(lambda x: x)):
+        if name in data:
+            setattr(field, name, fun(data[name]))
+            return True
+        return False
+
+    @staticmethod
+    def use_auto_data(data):
+        return data is "~"
+
     def json_to_field_info(self, data):
         info = Info()
-        info.episode_number = data['episode_number']
-        info.n_usages = data['n_usages']
-        info.source = data['source']
-        info.creation_date = self.str_to_ros_time(data['creation_date'])
-        info.last_access = self.str_to_ros_time(data['last_access'])
-        info.ltm_version = data['ltm_version']
-        info.ros_version = data['ros_version']
-        info.os = data['os']
-        info.os_version = data['os_version']
+        if self.use_auto_data(data):
+            return self.auto_info()
+        self.get_data(info, 'n_usages', data)
+        self.get_data(info, 'source', data)
+        self.get_data(info, 'creation_date', data, self.str_to_ros_time)
+        self.get_data(info, 'last_access', data, self.str_to_ros_time)
+        self.get_data(info, 'ltm_version', data)
+        self.get_data(info, 'ros_version', data)
+        self.get_data(info, 'os_version', data)
         return info
 
     # TODO: handle streams and entities
-    @staticmethod
-    def json_to_field_what(data):
+    def json_to_field_what(self, data):
         what = What()
-        what.features = data['features']
-        what.feature_values = data['feature_values']
+        if self.use_auto_data(data):
+            return what
+        self.get_data(what, 'features', data)
+        self.get_data(what, 'feature_values', data)
         return what
 
     def json_to_field_where(self, data):
         where = Where()
-        where.frame_id = data['frame_id']
-        where.map_name = data['map_name']
-        where.position = self.json_to_ros_position(data['position'])
-        where.location = data['location']
-        where.area = data['area']
-        where.children_locations = data['children_locations']
-        where.children_areas = data['children_areas']
-        where.children_hull = None  # TODO
+        if self.use_auto_data(data):
+            return where
+        self.get_data(where, 'frame_id', data)
+        self.get_data(where, 'map_name', data)
+        self.get_data(where, 'position', data, self.json_to_ros_position)
+        self.get_data(where, 'location', data)
+        self.get_data(where, 'area', data)
+        self.get_data(where, 'children_locations', data)
+        self.get_data(where, 'children_areas', data)
+        self.get_data(where, 'children_hull', data)
         return where
 
     def json_to_field_when(self, data):
         when = When()
-        when.start = self.str_to_ros_time(data['start'])
-        when.end = self.str_to_ros_time(data['end'])
+        if self.use_auto_data(data):
+            return when
+        self.get_data(when, 'start', data, self.str_to_ros_time)
+        self.get_data(when, 'end', data, self.str_to_ros_time)
         return when
 
     def json_to_field_relevance(self, data):
         relevance = Relevance()
-        relevance.emotional = self.json_to_field_emotional_relevance(data['emotional'])
-        relevance.historical = self.json_to_field_historical_relevance(data['historical'])
+        if self.use_auto_data(data):
+            return relevance
+        self.get_data(relevance, 'emotional', data, self.json_to_field_emotional_relevance)
+        self.get_data(relevance, 'historical', data, self.json_to_field_historical_relevance)
         return relevance
 
-    @staticmethod
-    def json_to_field_emotional_relevance(data):
+    def json_to_field_emotional_relevance(self, data):
         emotional = EmotionalRelevance()
-        emotional.software = data['software']
-        emotional.software_version = data['software_version']
-        emotional.registered_emotions = data['registered_emotions']
-        emotional.registered_values = data['registered_values']
-        emotional.emotion = data['emotion']
-        emotional.value = data['value']
-        emotional.children_emotions = data['children_emotions']
-        emotional.children_values = data['children_values']
+        if self.use_auto_data(data):
+            return emotional
+        self.get_data(emotional, 'software', data)
+        self.get_data(emotional, 'software_version', data)
+        self.get_data(emotional, 'registered_emotions', data)
+        self.get_data(emotional, 'registered_values', data)
+        self.get_data(emotional, 'emotion', data)
+        self.get_data(emotional, 'value', data)
+        self.get_data(emotional, 'children_emotions', data)
+        self.get_data(emotional, 'children_values', data)
         return emotional
 
     def json_to_field_historical_relevance(self, data):
         historical = HistoricalRelevance()
-        historical.value = data['value']
-        historical.last_update = self.str_to_ltm_date(data['last_update'])
-        historical.next_update = self.str_to_ltm_date(data['next_update'])
+        if self.use_auto_data(data):
+            return historical
+        self.get_data(historical, 'value', data)
+        self.get_data(historical, 'last_update', data, self.str_to_ltm_date)
+        self.get_data(historical, 'next_update', data, self.str_to_ltm_date)
         return historical
 
-    @staticmethod
-    def json_to_ros_position(data):
+    def json_to_ros_position(self, data):
         position = Point()
-        position.x = data['x']
-        position.y = data['y']
-        position.z = data['z']
+        self.get_data(position, 'x', data)
+        self.get_data(position, 'y', data)
+        self.get_data(position, 'z', data)
         return position
 
     # ignores nanoseconds
