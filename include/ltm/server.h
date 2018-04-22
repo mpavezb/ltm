@@ -5,28 +5,13 @@
 #include <string>
 #include <iostream>
 #include <ros/ros.h>
-#include <ltm/Episode.h>
+#include <std_srvs/Empty.h>
 #include <ltm/AddEpisode.h>
 #include <ltm/UpdateEpisode.h>
 #include <ltm/GetEpisode.h>
-#include <std_srvs/Empty.h>
+#include <ltm/db_manager.h>
 
-#include <warehouse_ros/message_with_metadata.h>
-#include <warehouse_ros_mongo/database_connection.h>
-
-
-typedef warehouse_ros::MessageCollection<ltm::Episode> EpisodeCollection;
-typedef boost::shared_ptr<EpisodeCollection> EpisodeCollectionPtr;
-
-typedef warehouse_ros::MessageWithMetadata<ltm::Episode> EpisodeWithMetadata;
-typedef boost::shared_ptr<const EpisodeWithMetadata> EpisodeWithMetadataPtr;
-
-typedef warehouse_ros_mongo::Query Query;
-typedef warehouse_ros_mongo::Query::Ptr QueryPtr;
-
-typedef warehouse_ros::Metadata Metadata;
-typedef warehouse_ros::Metadata::Ptr MetadataPtr;
-
+typedef boost::scoped_ptr<ltm::Manager> ManagerPtr;
 
 namespace ltm {
 
@@ -46,19 +31,13 @@ namespace ltm {
         ros::ServiceServer _drop_db_service;
         ros::ServiceServer _get_episode_service;
         ros::ServiceServer _add_episode_service;
-        ros::ServiceServer _update_episode_service;
+        ros::ServiceServer _auto_update_episode_service;
 
         // DB
-        warehouse_ros_mongo::MongoDatabaseConnection _conn;
-        EpisodeCollectionPtr _coll;
+        ManagerPtr _db;
 
         // internal methods
-        void setup_db();
         void show_status();
-        bool episode_exists(int uid);
-        bool remove_by_uid(int uid);
-        std::string to_short_string(const ltm::Episode& episode);
-        MetadataPtr makeMetadata(EpisodeCollectionPtr coll_ptr, const ltm::Episode& episode);
 
     public:
 
@@ -74,7 +53,7 @@ namespace ltm {
         bool get_episode_service(ltm::GetEpisode::Request  &req, ltm::GetEpisode::Response &res);
 
         /**/
-        bool update_episode_service(ltm::UpdateEpisode::Request  &req, ltm::UpdateEpisode::Response &res);
+        bool auto_update_episode_service(ltm::UpdateEpisode::Request  &req, ltm::UpdateEpisode::Response &res);
 
         /**/
         bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);
