@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+__author__ = 'Matías Pavez'
+__email__ = 'matias.pavez@ing.uchile.cl'
+
+from ltm.json_loader import main
+
+if __name__ == '__main__':
+    main()

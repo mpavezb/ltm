@@ -3,6 +3,7 @@
     "type": 0,
     "parent_id": 3,
     "children_ids": [0, 1, 2],
+    "tags": ["sample", "hri", "vision", "talk"],
     "info":
     {
         "episode_number": 1,
@@ -15,7 +16,6 @@
         "os": "ubuntu",
         "os_version": "16.04"
     },
-    "tags": ["sample", "hri", "vision", "talk"],
     "when": {
         "start": "UTC_2018/04/16_18:19:16.310383",
         "end":   "UTC_2018/04/16_18:25:11.345612"
