@@ -22,7 +22,7 @@ class LoaderNode(object):
 
         # ROS clients
         rospy.loginfo("Waiting for LTM server to be up.")
-        self.add_episode_client = rospy.ServiceProxy('ltm_server/add_episode', AddEpisode)
+        self.add_episode_client = rospy.ServiceProxy('ltm/add_episode', AddEpisode)
 
         # Wait for ROS services
         self.add_episode_client.wait_for_service()

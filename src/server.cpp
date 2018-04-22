@@ -1,5 +1,6 @@
 #include <ltm/server.h>
 #include <boost/scoped_ptr.hpp>
+#include <ltm/parameter_server_wrapper.h>
 
 using warehouse_ros::Metadata;
 
@@ -9,14 +10,15 @@ namespace ltm {
     Server::Server() {
         ros::NodeHandle priv("~");
 
-        _db_name = "ltm_db";
-        _db_collection_name = "episodes";
-        _db_host = "localhost";
-        _db_port = 27017;
-        _db_timeout = 60.0;
+        ParameterServerWrapper psw;
+        psw.getParameter("db", _db_name, "ltm_db");
+        psw.getParameter("collection", _db_collection_name, "episodes");
+        psw.getParameter("host", _db_host, "localhost");
+        psw.getParameter("port", _db_port, 27017);
+        psw.getParameter("timeout", _db_timeout, 60.0);
 
         // DB manager
-        _db.reset(new Manager(_db_name, _db_collection_name, _db_host, _db_port, _db_timeout));
+        _db.reset(new Manager(_db_name, _db_collection_name, _db_host, (uint)_db_port, _db_timeout));
         _db->setup();
 
         // Announce services

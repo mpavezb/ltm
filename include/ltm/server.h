@@ -23,7 +23,7 @@ namespace ltm {
         std::string _db_name;
         std::string _db_collection_name;
         std::string _db_host;
-        uint _db_port;
+        int _db_port;
         float _db_timeout;
 
         // servers

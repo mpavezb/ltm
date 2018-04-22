@@ -1,6 +1,6 @@
 <launch>
 
-    <node name="ltm_json_loader" type="json_loader" pkg="ltm" output="screen">
+    <node name="ltm_json_loader" type="json_loader" pkg="ltm" ns="robot" output="screen">
         <!-- filename -->
         <param name="source" type="str" value="$(find ltm)/test/_structure.json"/>
     </node>
