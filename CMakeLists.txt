@@ -42,6 +42,8 @@ add_message_files(
 add_service_files(
     FILES
     AddEpisode.srv
+    UpdateEpisode.srv
+    GetEpisode.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -76,7 +78,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include include
     LIBRARIES
-    CATKIN_DEPENDS roscpp std_msgs std_srvs message_runtime
+    CATKIN_DEPENDS roscpp std_msgs std_srvs message_runtime geometry_msgs sensor_msgs warehouse_ros_mongo
     DEPENDS
 )
 

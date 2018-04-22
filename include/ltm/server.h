@@ -7,15 +7,24 @@
 #include <ros/ros.h>
 #include <ltm/Episode.h>
 #include <ltm/AddEpisode.h>
+#include <ltm/UpdateEpisode.h>
+#include <ltm/GetEpisode.h>
 #include <std_srvs/Empty.h>
 #include <std_srvs/Trigger.h>
-
 
 #include <warehouse_ros/message_with_metadata.h>
 #include <warehouse_ros_mongo/database_connection.h>
 
-typedef warehouse_ros::MessageWithMetadata<ltm::Episode> EpisodeWithMetadata;
+
 typedef warehouse_ros::MessageCollection<ltm::Episode> EpisodeCollection;
+typedef boost::shared_ptr<EpisodeCollection> EpisodeCollectionPtr;
+
+typedef warehouse_ros::MessageWithMetadata<ltm::Episode> EpisodeWithMetadata;
+typedef boost::shared_ptr<const EpisodeWithMetadata> EpisodeWithMetadataPtr;
+
+typedef warehouse_ros_mongo::Query Query;
+typedef warehouse_ros_mongo::Query::Ptr QueryPtr;
+
 
 namespace ltm {
 
@@ -25,10 +34,15 @@ namespace ltm {
         std::string _name;
         ros::ServiceServer _status_service;
         ros::ServiceServer _drop_db_service;
+        ros::ServiceServer _get_episode_service;
         ros::ServiceServer _add_episode_service;
         ros::ServiceServer _append_dummies_service;
+        ros::ServiceServer _update_episode_service;
         warehouse_ros_mongo::MongoDatabaseConnection _conn;
 
+        EpisodeCollectionPtr _coll;
+
+        void setup_db();
         void show_status();
         std::string to_short_string(const ltm::Episode& episode);
 
@@ -38,11 +52,15 @@ namespace ltm {
 
         virtual ~Server();
 
-//        EpisodeCollection getCollection();
-
         // ==========================================================
         // ROS Services
         // ==========================================================
+
+        /**/
+        bool get_episode_service(ltm::GetEpisode::Request  &req, ltm::GetEpisode::Response &res);
+
+        /**/
+        bool update_episode_service(ltm::UpdateEpisode::Request  &req, ltm::UpdateEpisode::Response &res);
 
         /**/
         bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);
