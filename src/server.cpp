@@ -126,19 +126,19 @@ namespace ltm {
     }
 
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
-        bool updating = false;
+        bool replace = false;
         if (episode_exists(req.episode.uid)) {
-            if (!req.update) {
+            if (!req.replace) {
                 ROS_ERROR_STREAM("ADD: Episode with uid '" << req.episode.uid << "' already exists.");
                 res.succeeded = (uint8_t) false;
                 return true;
             }
-            updating = true;
+            replace = true;
             remove_by_uid(req.episode.uid);
         }
         _coll->insert(req.episode, makeMetadata(_coll, req.episode));
-        ROS_INFO_STREAM_COND(updating, "ADD: Episode '" << req.episode.uid << "'updated. (" << _coll->count() << " entries)");
-        ROS_INFO_STREAM_COND(!updating, "ADD: New episode '" << req.episode.uid << "'. (" << _coll->count() << " entries)");
+        ROS_INFO_STREAM_COND(replace, "ADD: Replacing episode '" << req.episode.uid << "'. (" << _coll->count() << " entries)");
+        ROS_INFO_STREAM_COND(!replace, "ADD: New episode '" << req.episode.uid << "'. (" << _coll->count() << " entries)");
         res.succeeded = (uint8_t) true;
         return true;
     }
@@ -149,9 +149,11 @@ namespace ltm {
     }
 
     bool Server::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-        // clear existing data
+        // TODO: this requires a synchronization mechanism
+        // TODO: the connection should be closed first?
         ROS_INFO("DELETE: Dropping DB");
         _conn.dropDatabase(_db_name);
+        setup_db();
         show_status();
         return true;
     }
