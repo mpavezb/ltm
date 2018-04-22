@@ -1,4 +1,4 @@
 # target episode uid
 uint32 uid
 ---
-# (nothing)
+bool succeeded

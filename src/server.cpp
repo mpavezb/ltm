@@ -6,31 +6,14 @@ using warehouse_ros::Metadata;
 
 namespace ltm {
 
-    inline ltm::Episode makeEpisode(const u_int32_t uid, const u_int8_t type, const u_int32_t parent_id)
-    {
-        ltm::Episode episode;
-        episode.uid = uid;
-        episode.type = type;
-        episode.parent_id = parent_id;
-        episode.info.source = "test";
-        return episode;
-    }
-
-    Metadata::Ptr makeMetadata(EpisodeCollectionPtr coll_ptr, const ltm::Episode& episode)
-    {
-//        // Create metadata, this data is used for queries
-//        mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
-//                                     "z", grasp_vector.pose.position.z);
-
-        Metadata::Ptr meta = coll_ptr->createMetadata();
-        meta->append("uid", (int) episode.uid);
-        meta->append("type", episode.type);
-        meta->append("source", episode.info.source);
-        return meta;
-    }
-
     Server::Server() {
         ros::NodeHandle priv("~");
+
+        _db_name = "ltm_db";
+        _db_collection_name = "episodes";
+        _db_host = "localhost";
+        _db_port = 27017;
+        _db_timeout = 60.0;
 
         setup_db();
 
@@ -40,7 +23,6 @@ namespace ltm {
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
         _status_service = priv.advertiseService("status", &Server::status_service, this);
         _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
-        _append_dummies_service = priv.advertiseService("append_dummies", &Server::append_dummies_service, this);
 
         ROS_INFO("LTM server is up and running.");
         show_status();
@@ -52,19 +34,19 @@ namespace ltm {
         // setup DB
         try {
             // host, port, timeout
-            _conn.setParams("localhost", 27017, 60.0);
+            _conn.setParams(_db_host, _db_port, _db_timeout);
             _conn.connect();
-            _coll = _conn.openCollectionPtr<ltm::Episode>("ltm_db", "episodes");
+            _coll = _conn.openCollectionPtr<ltm::Episode>(_db_name, _db_collection_name);
         }
         catch (const warehouse_ros::DbConnectException& exception) {
             // Connection timeout
-            ROS_ERROR_STREAM("Connection timeout to DB 'ltm_db'.");
+            ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "'.");
             ros::shutdown();
             exit(1);
         }
         // Check for empty database
         if (!_conn.isConnected() || !_coll) {
-            ROS_ERROR_STREAM("Connection to DB failed for collection 'ltm_db'.");
+            ROS_ERROR_STREAM("Connection to DB failed for collection '" << _db_collection_name << "'.");
             ros::shutdown();
             exit(1);
         }
@@ -84,6 +66,37 @@ namespace ltm {
         return ss.str();
     }
 
+    bool Server::remove_by_uid(int uid) {
+        QueryPtr query = _coll->createQuery();
+        query->append("uid", uid);
+        _coll->removeMessages(query);
+        return true;
+    }
+
+    bool Server::episode_exists(int uid) {
+        QueryPtr query = _coll->createQuery();
+        query->append("uid", uid);
+        try {
+            _coll->findOne(query, true);
+        }
+        catch (const warehouse_ros::NoMatchingMessageException& exception) {
+            return false;
+        }
+        return true;
+    }
+
+    MetadataPtr Server::makeMetadata(EpisodeCollectionPtr coll_ptr, const ltm::Episode& episode) {
+//        // Create metadata, this data is used for queries
+//        mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
+//                                     "z", grasp_vector.pose.position.z);
+
+        MetadataPtr meta = coll_ptr->createMetadata();
+        meta->append("uid", (int) episode.uid);
+        meta->append("type", episode.type);
+        meta->append("source", episode.info.source);
+        return meta;
+    }
+
     // ==========================================================
     // ROS Services
     // ==========================================================
@@ -99,24 +112,34 @@ namespace ltm {
         }
         catch (const warehouse_ros::NoMatchingMessageException& exception) {
             ROS_ERROR_STREAM("GET: Episode with uid '" << req.uid << "' not found.");
-            return false;
+            res.succeeded = (uint8_t) false;
+            return true;
         }
+        res.succeeded = (uint8_t) true;
         return true;
     }
 
     bool Server::update_episode_service(ltm::UpdateEpisode::Request &req, ltm::UpdateEpisode::Response &res) {
         ROS_INFO_STREAM("Updating episode structure for uid: " << req.uid);
+        res.succeeded = (uint8_t) true;
         return true;
     }
 
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
-        EpisodeCollectionPtr db;
-        db.reset();
-        // check uid!
-
+        bool updating = false;
+        if (episode_exists(req.episode.uid)) {
+            if (!req.update) {
+                ROS_ERROR_STREAM("ADD: Episode with uid '" << req.episode.uid << "' already exists.");
+                res.succeeded = (uint8_t) false;
+                return true;
+            }
+            updating = true;
+            remove_by_uid(req.episode.uid);
+        }
         _coll->insert(req.episode, makeMetadata(_coll, req.episode));
-        ROS_INFO_STREAM("Added episode " << to_short_string(req.episode));
-        show_status();
+        ROS_INFO_STREAM_COND(updating, "ADD: Episode '" << req.episode.uid << "'updated. (" << _coll->count() << " entries)");
+        ROS_INFO_STREAM_COND(!updating, "ADD: New episode '" << req.episode.uid << "'. (" << _coll->count() << " entries)");
+        res.succeeded = (uint8_t) true;
         return true;
     }
 
@@ -127,36 +150,9 @@ namespace ltm {
 
     bool Server::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
         // clear existing data
-        ROS_INFO("Dropping DB: ltm_db");
-        _conn.dropDatabase("ltm_db");
+        ROS_INFO("DELETE: Dropping DB");
+        _conn.dropDatabase(_db_name);
         show_status();
-        return true;
-    }
-
-    bool Server::append_dummies_service(std_srvs::Trigger::Request &req, std_srvs::Trigger::Response &res) {
-
-        // create dummy episodes
-        const ltm::Episode ep1 = makeEpisode(1, ltm::Episode::LEAF, 3);
-        const ltm::Episode ep2 = makeEpisode(2, ltm::Episode::LEAF, 3);
-        const ltm::Episode ep3 = makeEpisode(3, ltm::Episode::EPISODE, 3);
-        const ltm::Episode ep4 = makeEpisode(4, ltm::Episode::CONTEXT, 0);
-        const ltm::Episode ep5 = makeEpisode(5, ltm::Episode::LEAF, 7);
-        const ltm::Episode ep6 = makeEpisode(6, ltm::Episode::LEAF, 7);
-        const ltm::Episode ep7 = makeEpisode(7, ltm::Episode::EPISODE, 4);
-
-        // insert data
-        _coll->insert(ep1, makeMetadata(_coll, ep1));
-        _coll->insert(ep2, makeMetadata(_coll, ep2));
-        _coll->insert(ep3, makeMetadata(_coll, ep3));
-        _coll->insert(ep4, makeMetadata(_coll, ep4));
-        _coll->insert(ep5, makeMetadata(_coll, ep5));
-        _coll->insert(ep6, makeMetadata(_coll, ep6));
-        _coll->insert(ep7, makeMetadata(_coll, ep7));
-
-        res.success = (u_int8_t) true;
-        res.message = "Appended 7 msgs";
-
-        ROS_INFO_STREAM("Appended 7 episodes. Now DB has: " << _coll->count() << " entries.");
         return true;
     }
 }

@@ -1,4 +1,7 @@
 # target episode
 ltm/Episode episode
+
+# update if already exists
+bool update
 ---
-# (nothing)
+bool succeeded

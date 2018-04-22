@@ -46,6 +46,7 @@ class LoaderNode(object):
         try:
             req = AddEpisodeRequest()
             req.episode = episode
+            req.update = True
             self.add_episode_client(req)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
