@@ -13,7 +13,7 @@ from calendar import timegm
 # ROS
 from rospy import Time
 from ltm.msg import *
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Point
 
 
 class JsonParser(object):
@@ -56,6 +56,8 @@ class JsonParser(object):
         episode.uid = data['uid']
         episode.type = data['type']
         episode.tags = data['tags']
+        episode.parent_id = data['parent_id']
+        episode.children_ids = data['children_ids']
         episode.info = self.json_to_field_info(data['info'])
         episode.what = self.json_to_field_what(data['what'])
         episode.where = self.json_to_field_where(data['where'])
@@ -80,19 +82,20 @@ class JsonParser(object):
     @staticmethod
     def json_to_field_what(data):
         what = What()
-        what.parent_id = data['parent_id']
-        what.children_ids = data['children_ids']
         what.features = data['features']
         what.feature_values = data['feature_values']
         return what
 
     def json_to_field_where(self, data):
         where = Where()
-        where.pose = self.json_to_ros_pose(data['pose'])
         where.frame_id = data['frame_id']
         where.map_name = data['map_name']
-        where.location_name = data['location_name']
-        where.location_area = data['location_area']
+        where.position = self.json_to_ros_position(data['position'])
+        where.location = data['location']
+        where.area = data['area']
+        where.children_locations = data['children_locations']
+        where.children_areas = data['children_areas']
+        where.children_hull = None  # TODO
         return where
 
     def json_to_field_when(self, data):
@@ -116,6 +119,8 @@ class JsonParser(object):
         emotional.registered_values = data['registered_values']
         emotional.emotion = data['emotion']
         emotional.value = data['value']
+        emotional.children_emotions = data['children_emotions']
+        emotional.children_values = data['children_values']
         return emotional
 
     def json_to_field_historical_relevance(self, data):
@@ -126,18 +131,12 @@ class JsonParser(object):
         return historical
 
     @staticmethod
-    def json_to_ros_pose(data):
-        pose = Pose()
-        position = data['position']
-        orientation = data['orientation']
-        pose.position.x = position['x']
-        pose.position.y = position['y']
-        pose.position.z = position['z']
-        pose.orientation.x = orientation['x']
-        pose.orientation.y = orientation['y']
-        pose.orientation.z = orientation['z']
-        pose.orientation.w = orientation['w']
-        return pose
+    def json_to_ros_position(data):
+        position = Point()
+        position.x = data['x']
+        position.y = data['y']
+        position.z = data['z']
+        return position
 
     # ignores nanoseconds
     @staticmethod

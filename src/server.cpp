@@ -11,7 +11,7 @@ namespace ltm {
         ltm::Episode episode;
         episode.uid = uid;
         episode.type = type;
-        episode.what.parent_id = parent_id;
+        episode.parent_id = parent_id;
         episode.info.source = "test";
         return episode;
     }

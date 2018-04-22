@@ -4,6 +4,10 @@ uint8 type
 string[] tags
 ltm/Info info
 
+# Episodic tree information
+int32 parent_id
+int32[] children_ids
+
 # Episodic LTM information
 ltm/What  what
 ltm/When  when
