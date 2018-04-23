@@ -48,6 +48,8 @@ namespace ltm {
         bool drop_db();
         bool episode_exists(int uid);
         std::string to_short_string(const Episode& episode);
+        bool update_tree(int uid);
+        bool update_tree_node(int uid, Episode& updated_episode);
     };
 
 }

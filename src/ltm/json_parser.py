@@ -178,13 +178,15 @@ class JsonParser(object):
     def str_to_ros_time(string):
         # time module supports up to microsecond resolution (ROS standard is nanosecond)
 
+        # parse date
         no_nsec = string[:23] if len(string) > 23 else string
+        utc_time = time.strptime(no_nsec, "UTC_%Y/%m/%d_%H:%M:%S")
+        epoch_time = timegm(utc_time)
+
+        # compute nanoseconds
         nsecs_str = string[24:] if len(string) > 24 else string
         nsecs = int(nsecs_str) * 10**(9-len(nsecs_str))
 
-        print str(no_nsec) + " - " + str(nsecs)
-        utc_time = time.strptime(no_nsec, "UTC_%Y/%m/%d_%H:%M:%S")
-        epoch_time = timegm(utc_time)
         return Time(epoch_time, nsecs)
 
     @staticmethod

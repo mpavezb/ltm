@@ -7,7 +7,7 @@
 #include <ros/ros.h>
 #include <std_srvs/Empty.h>
 #include <ltm/AddEpisode.h>
-#include <ltm/UpdateEpisode.h>
+#include <ltm/UpdateTree.h>
 #include <ltm/GetEpisode.h>
 #include <ltm/db_manager.h>
 
@@ -31,7 +31,7 @@ namespace ltm {
         ros::ServiceServer _drop_db_service;
         ros::ServiceServer _get_episode_service;
         ros::ServiceServer _add_episode_service;
-        ros::ServiceServer _auto_update_episode_service;
+        ros::ServiceServer _update_tree_service;
 
         // DB
         ManagerPtr _db;
@@ -53,7 +53,7 @@ namespace ltm {
         bool get_episode_service(ltm::GetEpisode::Request  &req, ltm::GetEpisode::Response &res);
 
         /**/
-        bool auto_update_episode_service(ltm::UpdateEpisode::Request  &req, ltm::UpdateEpisode::Response &res);
+        bool update_tree_service(ltm::UpdateTree::Request &req, ltm::UpdateTree::Response &res);
 
         /**/
         bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);

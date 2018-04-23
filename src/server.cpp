@@ -1,6 +1,6 @@
+#include <ltm/parameter_server_wrapper.h>
 #include <ltm/server.h>
 #include <boost/scoped_ptr.hpp>
-#include <ltm/parameter_server_wrapper.h>
 
 using warehouse_ros::Metadata;
 
@@ -23,7 +23,7 @@ namespace ltm {
 
         // Announce services
         _get_episode_service = priv.advertiseService("get_episode", &Server::get_episode_service, this);
-        _auto_update_episode_service = priv.advertiseService("update_episode_auto", &Server::auto_update_episode_service, this);
+        _update_tree_service = priv.advertiseService("update_tree", &Server::update_tree_service, this);
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
         _status_service = priv.advertiseService("status", &Server::status_service, this);
         _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
@@ -55,8 +55,15 @@ namespace ltm {
         return true;
     }
 
-    bool Server::auto_update_episode_service(ltm::UpdateEpisode::Request &req, ltm::UpdateEpisode::Response &res) {
+    bool Server::update_tree_service(ltm::UpdateTree::Request &req, ltm::UpdateTree::Response &res) {
         ROS_INFO_STREAM("Updating episode structure for uid: " << req.uid);
+        // reportar problemas!
+        // TODO: missing child
+        // TODO: missing root
+        if (!_db->update_tree(req.uid)) {
+            ROS_ERROR_STREAM("A problem occurred while trying to update the tree for uid: " << req.uid);
+            res.succeeded = (uint8_t) false;
+        }
         res.succeeded = (uint8_t) true;
         return true;
     }
