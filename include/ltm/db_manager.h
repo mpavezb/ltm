@@ -36,7 +36,15 @@ namespace ltm {
         EpisodeCollectionPtr _coll;
 
         // metadata methods
-        MetadataPtr makeMetadata(EpisodeCollectionPtr coll_ptr, const Episode& episode);
+        MetadataPtr make_metadata(const Episode& episode);
+        void make_meta_episode(const Episode& node, MetadataPtr meta);
+        void make_meta_info(const Info& node, MetadataPtr meta);
+        void make_meta_when(const When& node, MetadataPtr meta);
+        void make_meta_where(const Where& node, MetadataPtr meta);
+        void make_meta_what(const What& node, MetadataPtr meta);
+        void make_meta_relevance(const Relevance& node, MetadataPtr meta);
+        void make_meta_relevance_historical(const HistoricalRelevance& node, MetadataPtr meta);
+        void make_meta_relevance_emotional(const EmotionalRelevance& node, MetadataPtr meta);
 
         // update tree methods
         bool update_tree_node(int uid, Episode& updated_episode);

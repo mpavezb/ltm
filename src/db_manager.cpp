@@ -18,23 +18,76 @@ namespace ltm {
     // Private API
     // =================================================================================================================
 
-    MetadataPtr Manager::makeMetadata(EpisodeCollectionPtr coll_ptr, const Episode& episode) {
-//        // Create metadata, this data is used for queries
-//        mongo_ros::Metadata metadata("x", grasp_vector.pose.position.x, "y", grasp_vector.pose.position.y,
-//                                     "z", grasp_vector.pose.position.z);
-        double start = episode.when.start.sec + episode.when.start.nsec * pow10(-9);
-        double end = episode.when.end.sec + episode.when.end.nsec * pow10(-9);
+    // -----------------------------------------------------------------------------------------------------------------
+    // Metadata Builders
+    // -----------------------------------------------------------------------------------------------------------------
 
-        MetadataPtr meta = coll_ptr->createMetadata();
-        meta->append("uid", (int) episode.uid);
-        meta->append("type", episode.type);
-        meta->append("source", episode.info.source);
+    void Manager::make_meta_episode(const Episode& node, MetadataPtr meta) {
+        meta->append("uid", (int) node.uid);
+        meta->append("type", node.type);
+        meta->append("parent_id", node.parent_id);
+
+        // TODO: REQUIRES META ARRAY
+        // meta->append("children_ids", node.children_ids);
+        // meta->append("tags", node.tags);
+    }
+
+    void Manager::make_meta_info(const Info& node, MetadataPtr meta) {
+        meta->append("info.source", node.source);
+    }
+
+    void Manager::make_meta_when(const When& node, MetadataPtr meta) {
+        double start = node.start.sec + node.start.nsec * pow10(-9);
+        double end = node.end.sec + node.end.nsec * pow10(-9);
         meta->append("when.start", start);
         meta->append("when.end", end);
-        meta->append("relevance.historical.value", episode.relevance.historical.value);
-//        meta->append("relevance.historical.last_update", episode.relevance.historical.last_update.);
+    }
+
+    void Manager::make_meta_where(const Where& node, MetadataPtr meta) {
+
+    }
+
+    void Manager::make_meta_what(const What& node, MetadataPtr meta) {
+
+    }
+
+    void Manager::make_meta_relevance(const Relevance& node, MetadataPtr meta) {
+        make_meta_relevance_emotional(node.emotional, meta);
+        make_meta_relevance_historical(node.historical, meta);
+    }
+
+    void Manager::make_meta_relevance_historical(const HistoricalRelevance& node, MetadataPtr meta) {
+        meta->append("relevance.historical.value", node.value);
+
+        // TODO: REQUIRES FORMATTING
+        // meta->append("relevance.historical.last_update", node.last_update);
+        // meta->append("relevance.historical.next_update", node.next_update);
+    }
+
+    void Manager::make_meta_relevance_emotional(const EmotionalRelevance& node, MetadataPtr meta) {
+        meta->append("relevance.emotional.emotion", node.emotion);
+        meta->append("relevance.emotional.value", node.value);
+
+        // TODO: REQUIRES META ARRAY
+        // meta->append("relevance.emotional.children_emotions", node.children_emotions);
+        // meta->append("relevance.emotional.children_values", node.children_values);
+    }
+
+    MetadataPtr Manager::make_metadata(const Episode &episode) {
+        MetadataPtr meta = _coll->createMetadata();
+        make_meta_episode(episode, meta);
+        make_meta_info(episode.info, meta);
+        make_meta_when(episode.when, meta);
+        make_meta_where(episode.where, meta);
+        make_meta_what(episode.what, meta);
+        make_meta_relevance(episode.relevance, meta);
         return meta;
     }
+
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Update Queries
+    // -----------------------------------------------------------------------------------------------------------------
 
     bool Manager::update_tree_tags(Episode& node, const Episode& child, bool first, bool is_leaf) {
 
@@ -130,7 +183,7 @@ namespace ltm {
             // update components
             update_tree_tags(updated_episode, child, first_child, is_leaf);
             update_tree_info(updated_episode.info, child.info, first_child, is_leaf);
-            update_tree_when(updated_episode.when, child.when, first_child, is_leaf);
+            update_tree_when(updated_episode.when, child.when, first_child);
             update_tree_where(updated_episode.where, child.where, first_child, is_leaf);
             update_tree_what(updated_episode.what, child.what, first_child, is_leaf);
             update_tree_relevance(updated_episode.relevance, child.relevance, first_child, is_leaf);
@@ -183,7 +236,7 @@ namespace ltm {
     // -----------------------------------------------------------------------------------------------------------------
 
     bool Manager::insert(const ltm::Episode &episode) {
-        _coll->insert(episode, makeMetadata(_coll, episode));
+        _coll->insert(episode, make_metadata(episode));
         return true;
     }
 
