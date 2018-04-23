@@ -70,14 +70,14 @@ namespace ltm {
 
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
         bool replace = false;
-        if (_db->episode_exists(req.episode.uid)) {
+        if (_db->has(req.episode.uid)) {
             if (!req.replace) {
                 ROS_ERROR_STREAM("ADD: Episode with uid '" << req.episode.uid << "' already exists.");
                 res.succeeded = (uint8_t) false;
                 return true;
             }
             replace = true;
-            _db->remove_by_uid(req.episode.uid);
+            _db->remove(req.episode.uid);
         }
         _db->insert(req.episode);
         ROS_INFO_STREAM_COND(replace, "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");

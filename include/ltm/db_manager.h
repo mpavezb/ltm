@@ -31,25 +31,44 @@ namespace ltm {
         uint _db_port;
         float _db_timeout;
 
+        // db handlers
         warehouse_ros_mongo::MongoDatabaseConnection _conn;
         EpisodeCollectionPtr _coll;
+
+        // metadata methods
         MetadataPtr makeMetadata(EpisodeCollectionPtr coll_ptr, const Episode& episode);
+
+        // update tree methods
+        bool update_tree_node(int uid, Episode& updated_episode);
+        bool update_tree_tags(Episode& node, const Episode& child, bool first, bool is_leaf);
+        bool update_tree_info(Info& node, const Info& child, bool first, bool is_leaf);
+        bool update_tree_when(When& node, const When& child, bool first);
+        bool update_tree_where(Where& node, const Where& child, bool first, bool is_leaf);
+        bool update_tree_what(What& node, const What& child, bool first, bool is_leaf);
+        bool update_tree_relevance(Relevance& node, const Relevance& child, bool first, bool is_leaf);
+        bool update_tree_relevance_historical(HistoricalRelevance& node, const HistoricalRelevance& child, bool first);
+        bool update_tree_relevance_emotional(EmotionalRelevance& node, const EmotionalRelevance& child, bool first, bool is_leaf);
+
 
     public:
         Manager(const std::string& name, const std::string& collection, const std::string& host, uint port, float timeout);
-
         virtual ~Manager();
 
+        std::string to_short_string(const Episode& episode);
+
         void setup();
-        bool remove_by_uid(int uid);
-        int count();
+
+        // CRUD API
         bool insert(const Episode& episode);
         bool get(int uid, EpisodeWithMetadataPtr& episode_ptr);
-        bool drop_db();
-        bool episode_exists(int uid);
-        std::string to_short_string(const Episode& episode);
+        bool update(const Episode& episode);
+        bool remove(int uid);
+
+        // queries
+        int count();
+        bool has(int uid);
         bool update_tree(int uid);
-        bool update_tree_node(int uid, Episode& updated_episode);
+        bool drop_db();
     };
 
 }
