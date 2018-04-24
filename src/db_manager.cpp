@@ -381,6 +381,7 @@ namespace ltm {
         result = result && remove(uid);
         result = result && insert(updated_episode);
         ROS_DEBUG_STREAM(" -> node updated: " << uid);
+        ROS_ERROR_STREAM_COND(!result,"UPDATE TREE: An error occurred while updating episode (" << uid << ")");
         return result;
     }
 
