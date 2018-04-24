@@ -1,4 +1,7 @@
 #include <ltm/db_manager.h>
+#include <ltm/geometry.h>
+#include <algorithm>
+#include <sstream>
 
 namespace ltm {
 
@@ -44,11 +47,18 @@ namespace ltm {
     }
 
     void Manager::make_meta_where(const Where& node, MetadataPtr meta) {
+        // TODO: how to manage leaf vs node information
+        meta->append("where.location", node.location);
+        meta->append("where.area", node.area);
 
+        // TODO: REQUIRES META ARRAY
+        // meta->append("where.children_locations", node.children_locations);
+        // meta->append("where.children_areas", node.children_areas);
     }
 
     void Manager::make_meta_what(const What& node, MetadataPtr meta) {
-
+        // TODO: REQUIRES META ARRAY
+        // meta->append("what.features", node.features);
     }
 
     void Manager::make_meta_relevance(const Relevance& node, MetadataPtr meta) {
@@ -59,9 +69,13 @@ namespace ltm {
     void Manager::make_meta_relevance_historical(const HistoricalRelevance& node, MetadataPtr meta) {
         meta->append("relevance.historical.value", node.value);
 
-        // TODO: REQUIRES FORMATTING
-        // meta->append("relevance.historical.last_update", node.last_update);
-        // meta->append("relevance.historical.next_update", node.next_update);
+        char buff[16];
+        snprintf(buff, sizeof(buff), "%04u/%02u/%02u", node.last_update.year, node.last_update.month, node.last_update.day);
+        std::string last_update = buff;
+        snprintf(buff, sizeof(buff), "%04u/%02u/%02u", node.next_update.year, node.next_update.month, node.next_update.day);
+        std::string next_update = buff;
+        meta->append("relevance.historical.last_update", last_update);
+        meta->append("relevance.historical.next_update", next_update);
     }
 
     void Manager::make_meta_relevance_emotional(const EmotionalRelevance& node, MetadataPtr meta) {
@@ -89,12 +103,49 @@ namespace ltm {
     // Update Queries
     // -----------------------------------------------------------------------------------------------------------------
 
-    bool Manager::update_tree_tags(Episode& node, const Episode& child, bool first, bool is_leaf) {
+    std::string Manager::vector_to_str(const std::vector<std::string>& array) {
+        std::vector<std::string>::const_iterator it;
+        std::stringstream ss;
+        ss << "[";
+        for (it = array.begin(); it != array.end(); ++it) {
+            ss << *it << ", ";
+        }
+        ss.seekp(-2, ss.cur);
+        ss << "]";
+        return ss.str();
+    }
 
+    void Manager::vector_merge(std::vector<std::string>& result, const std::vector<std::string>& source) {
+        std::vector<std::string>::const_iterator it;
+        for (it = source.begin(); it != source.end(); ++it) {
+
+            if (std::find(result.begin(), result.end(), *it) == result.end()) {
+                result.push_back(*it);
+            }
+
+        }
+        std::sort(result.begin(), result.end());
+    }
+
+    bool Manager::update_tree_tags(Episode& node, const Episode& child) {
+        vector_merge(node.tags, child.tags);
+        ROS_DEBUG_STREAM(" ---> tags: " << vector_to_str(node.tags));
+        return true;
     }
 
     bool Manager::update_tree_info(Info& node, const Info& child, bool first, bool is_leaf) {
+        if (first) {
+            node = child;
+            return true;
+        }
 
+        int n_usages = node.n_usages;
+        if (node.creation_date < child.creation_date) {
+            node = child;
+        }
+        // TODO: register this: n_usages parent = SUM children
+        node.n_usages += n_usages;
+        return true;
     }
 
     bool Manager::update_tree_when(When& node, const When& child, bool first) {
@@ -111,12 +162,72 @@ namespace ltm {
         return true;
     }
 
-    bool Manager::update_tree_where(Where& node, const Where& child, bool first, bool is_leaf) {
+    bool Manager::update_tree_where_last(Where& node, std::vector<geometry_msgs::Point> &positions) {
+        ROS_DEBUG_STREAM(" ---> where (pre hull): " << point_vector_to_str(positions));
+        // returns ordered list
+        convex_hull_2d(positions, node.children_hull);
 
+        // this requires an ordered list
+        node.position = polygon_centroid_2d(node.children_hull);
+        ROS_DEBUG_STREAM(" ---> where.children_hull: " << point_vector_to_str(node.children_hull));
+        ROS_DEBUG_STREAM(" ---> where.position: (" << node.position.x << ", " << node.position.y << ")");
+        return true;
+    }
+
+    bool Manager::update_tree_where(Where& node, const Where& child, bool first, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions) {
+
+        // node is never a leaf!
+        node.location = "";
+        node.area = "";
+
+        if (is_leaf) {
+            std::vector<std::string> child_location;
+            child_location.push_back(child.location);
+            vector_merge(node.children_locations, child_location);
+
+            std::vector<std::string> child_area;
+            child_location.push_back(child.area);
+            vector_merge(node.children_locations, child_area);
+
+            // just a point
+            positions.push_back(child.position);
+        } else {
+            vector_merge(node.children_locations, child.children_locations);
+            vector_merge(node.children_locations, child.children_areas);
+
+            // join children hull + other points
+            positions.reserve(positions.size() + child.children_hull.size());
+            positions.insert(positions.end(), child.children_hull.begin(), child.children_hull.end());
+        }
+
+        // TODO: WRITE limitation SOMEWHERE: require same frame_id and map_name on a tree
+        // frame_id and map_name must be the same for all children
+        bool result = true;
+        if (first) {
+            node.frame_id = child.frame_id;
+            node.map_name = child.map_name;
+        } else {
+            if (node.frame_id != child.frame_id) {
+                ROS_WARN_STREAM(
+                        "UPDATE: parent ("
+                        << node_uid << ") where.frame_id {" << node.frame_id
+                        << "} does not match child's (" << child_uid << ") {" << child.frame_id << "}.");
+                result = false;
+            }
+            if (node.map_name != child.map_name) {
+                ROS_WARN_STREAM(
+                        "UPDATE: parent ("
+                        << node_uid << ") where.map_name {" << node.map_name
+                        << "} does not match child's (" << child_uid << ") {" << child.map_name << "}.");
+                result = false;
+            }
+        }
+        return result;
     }
 
     bool Manager::update_tree_what(What& node, const What& child, bool first, bool is_leaf) {
-
+        // TODO
+        return true;
     }
 
     bool Manager::update_tree_relevance(Relevance& node, const Relevance& child, bool first, bool is_leaf) {
@@ -152,6 +263,7 @@ namespace ltm {
 //            AB.insert( AB.end(), A.begin(), A.end() );
 //            AB.insert( AB.end(), B.begin(), B.end() );
 
+        return true;
     }
 
     bool Manager::update_tree_node(int uid, Episode& updated_episode) {
@@ -166,13 +278,14 @@ namespace ltm {
 
         // is leaf
         if (ep_ptr->type == Episode::LEAF) {
-            ROS_DEBUG_STREAM(" - node " << uid << " is a leaf, will not update it.");
+            ROS_DEBUG_STREAM(" ---> node " << uid << " is a leaf, will not update it.");
             return true;
         }
 
         bool first_child = true;
         bool is_leaf;
         bool result = true;
+        std::vector<geometry_msgs::Point> positions;
         std::vector<int32_t>::const_iterator c_it;
         Episode child;
         for (c_it = ep_ptr->children_ids.begin(); c_it != ep_ptr->children_ids.end(); ++c_it) {
@@ -181,17 +294,20 @@ namespace ltm {
             is_leaf = (child.type == Episode::LEAF);
 
             // update components
-            update_tree_tags(updated_episode, child, first_child, is_leaf);
-            update_tree_info(updated_episode.info, child.info, first_child, is_leaf);
-            update_tree_when(updated_episode.when, child.when, first_child);
-            update_tree_where(updated_episode.where, child.where, first_child, is_leaf);
-            update_tree_what(updated_episode.what, child.what, first_child, is_leaf);
-            update_tree_relevance(updated_episode.relevance, child.relevance, first_child, is_leaf);
+            result = result && update_tree_tags(updated_episode, child);
+            result = result && update_tree_info(updated_episode.info, child.info, first_child, is_leaf);
+            result = result && update_tree_when(updated_episode.when, child.when, first_child);
+            result = result && update_tree_where(updated_episode.where, child.where, first_child, is_leaf, uid, child.uid, positions);
+            result = result && update_tree_what(updated_episode.what, child.what, first_child, is_leaf);
+            result = result && update_tree_relevance(updated_episode.relevance, child.relevance, first_child, is_leaf);
             first_child = false;
         }
-        remove(uid);
-        insert(updated_episode);
-        ROS_DEBUG_STREAM(" - node updated: " << uid);
+        result = result && update_tree_where_last(updated_episode.where, positions);
+
+        // TODO: update instead of remove/insert
+        result = result && remove(uid);
+        result = result && insert(updated_episode);
+        ROS_DEBUG_STREAM(" -> node updated: " << uid);
         return result;
     }
 
