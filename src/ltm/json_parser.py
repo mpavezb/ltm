@@ -59,6 +59,7 @@ class JsonParser(object):
         episode.uid = data['uid']
         episode.type = data['type']
         episode.tags = data['tags']
+        self.get_data(episode, 'children_tags', data)
         episode.parent_id = data['parent_id']
         episode.children_ids = data['children_ids']
         episode.info = self.json_to_field_info(data['info'])

@@ -20,6 +20,7 @@ namespace ltm {
     // Note: the last point in the returned list is the same as the first one.
     void convex_hull_2d(const std::vector<geometry_msgs::Point> &points, std::vector<geometry_msgs::Point> &hull);
 
+    // incomplete!
     void boost_hull(const std::vector<geometry_msgs::Point> &points, std::vector<geometry_msgs::Point> &hull);
 
     std::string point_vector_to_str(const std::vector<geometry_msgs::Point> &array);

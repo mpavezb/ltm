@@ -33,6 +33,7 @@ namespace ltm {
         // TODO: REQUIRES META ARRAY
         // meta->append("children_ids", node.children_ids);
         // meta->append("tags", node.tags);
+        // meta->append("children_tags", node.children_tags);
     }
 
     void Manager::make_meta_info(const Info& node, MetadataPtr meta) {
@@ -100,7 +101,7 @@ namespace ltm {
 
 
     // -----------------------------------------------------------------------------------------------------------------
-    // Update Queries
+    // Update Tree Queries
     // -----------------------------------------------------------------------------------------------------------------
 
     std::string Manager::vector_to_str(const std::vector<std::string>& array) {
@@ -127,39 +128,59 @@ namespace ltm {
         std::sort(result.begin(), result.end());
     }
 
+    void Manager::update_tree_tags_init(Episode &node) {
+        // do not clear own tags!.
+        node.children_tags.clear();
+    }
+
     bool Manager::update_tree_tags(Episode& node, const Episode& child) {
-        vector_merge(node.tags, child.tags);
+        vector_merge(node.children_tags, child.tags);
+        vector_merge(node.children_tags, child.children_tags);
         ROS_DEBUG_STREAM(" ---> tags: " << vector_to_str(node.tags));
+        ROS_DEBUG_STREAM(" ---> child tags: " << vector_to_str(node.children_tags));
         return true;
     }
 
-    bool Manager::update_tree_info(Info& node, const Info& child, bool first, bool is_leaf) {
-        if (first) {
-            node = child;
-            return true;
-        }
+    void Manager::update_tree_info_init(Info &node) {
+        node.n_usages = 0;
+        node.creation_date = ros::Time(0, 0);
+    }
 
+    bool Manager::update_tree_info(Info& node, const Info& child) {
+        // TODO: register this: n_usages parent = SUM children
         int n_usages = node.n_usages;
         if (node.creation_date < child.creation_date) {
             node = child;
         }
-        // TODO: register this: n_usages parent = SUM children
         node.n_usages += n_usages;
         return true;
     }
 
-    bool Manager::update_tree_when(When& node, const When& child, bool first) {
-        if (first) {
-            node = child;
-        } else {
-            if (child.start < node.start) {
-                node.start = child.start;
-            }
-            if (child.end > node.end) {
-                node.end = child.end;
-            }
+    void Manager::update_tree_when_init(When &node) {
+        node.start = ros::Time::now();
+        node.end = ros::Time(0, 0);
+    }
+
+    bool Manager::update_tree_when(When& node, const When& child) {
+        if (child.start < node.start) {
+            node.start = child.start;
+        }
+        if (child.end > node.end) {
+            node.end = child.end;
         }
         return true;
+    }
+
+    void Manager::update_tree_where_init(Where &node) {
+        // node is never a leaf!
+        node.location = "";
+        node.area = "";
+        node.frame_id = "";
+        node.map_name = "";
+        node.children_locations.clear();
+        node.children_areas.clear();
+        node.children_hull.clear();
+        node.position = geometry_msgs::Point();
     }
 
     bool Manager::update_tree_where_last(Where& node, std::vector<geometry_msgs::Point> &positions) {
@@ -174,12 +195,7 @@ namespace ltm {
         return true;
     }
 
-    bool Manager::update_tree_where(Where& node, const Where& child, bool first, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions) {
-
-        // node is never a leaf!
-        node.location = "";
-        node.area = "";
-
+    bool Manager::update_tree_where(Where& node, const Where& child, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions) {
         if (is_leaf) {
             std::vector<std::string> child_location;
             child_location.push_back(child.location);
@@ -203,10 +219,12 @@ namespace ltm {
         // TODO: WRITE limitation SOMEWHERE: require same frame_id and map_name on a tree
         // frame_id and map_name must be the same for all children
         bool result = true;
-        if (first) {
+        if (node.map_name == "" && node.frame_id == "") {
+            // first time
             node.frame_id = child.frame_id;
             node.map_name = child.map_name;
         } else {
+            // next children checks
             if (node.frame_id != child.frame_id) {
                 ROS_WARN_STREAM(
                         "UPDATE: parent ("
@@ -225,44 +243,90 @@ namespace ltm {
         return result;
     }
 
-    bool Manager::update_tree_what(What& node, const What& child, bool first, bool is_leaf) {
+    void Manager::update_tree_what_init(What &node) {
+        // TODO
+    }
+
+    bool Manager::update_tree_what(What& node, const What& child, bool is_leaf) {
         // TODO
         return true;
     }
 
-    bool Manager::update_tree_relevance(Relevance& node, const Relevance& child, bool first, bool is_leaf) {
+    void Manager::update_tree_relevance_init(Relevance &node) {
+        update_tree_relevance_historical_init(node.historical);
+        update_tree_relevance_emotional_init(node.emotional);
+    }
+
+    bool Manager::update_tree_relevance(Relevance& node, const Relevance& child, bool is_leaf) {
         bool result = true;
-        result = result && update_tree_relevance_historical(node.historical, child.historical, first);
-        result = result && update_tree_relevance_emotional(node.emotional, child.emotional, first, is_leaf);
+        result = result && update_tree_relevance_historical(node.historical, child.historical);
+        result = result && update_tree_relevance_emotional(node.emotional, child.emotional, is_leaf);
         return result;
     }
 
-    bool Manager::update_tree_relevance_historical(HistoricalRelevance& node, const HistoricalRelevance& child, bool first) {
-        if (first) {
+    void Manager::update_tree_relevance_historical_init(HistoricalRelevance &node) {
+        node.value = 0;
+    }
+
+    bool Manager::update_tree_relevance_historical(HistoricalRelevance& node, const HistoricalRelevance& child) {
+        if (child.value > node.value) {
             node = child;
-        } else {
-            if (child.value > node.value) {
-                node = child;
-            }
         }
         return true;
     }
 
-    bool Manager::update_tree_relevance_emotional(EmotionalRelevance& node, const EmotionalRelevance& child, bool first, bool is_leaf) {
+    void Manager::update_tree_relevance_emotional_init(EmotionalRelevance &node) {
+        // init with ordered emotions: 0 to 7
+        static const int arr[] = {0, 1, 2, 3, 4, 5, 6, 7};
+        std::vector<int32_t> tmp (arr, arr + sizeof(arr) / sizeof(arr[0]));
+        node.children_emotions.clear();
+        node.children_emotions = tmp;
 
-        //            int n_child_emotions = (int) child.relevance.emotional.children_emotions.size();
+        static const float arr2[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+        std::vector<float> tmp2 (arr, arr + sizeof(arr2) / sizeof(arr2[0]));
+        node.children_values.clear();
+        node.children_values = tmp2;
 
-//            for (int i = 0; i < n_child_emotions; ++i) {
-//                int n_emotions = (int) updated_episode.relevance.emotional.children_emotions.size();
-//                for (int j = 0; j < ; ++j) {
-//
-//                }
-//
-//            }
-//            AB.reserve( A.size() + B.size() ); // preallocate memory
-//            AB.insert( AB.end(), A.begin(), A.end() );
-//            AB.insert( AB.end(), B.begin(), B.end() );
+        // init global values with zeros
+        node.emotion = EmotionalRelevance::JOY;
+        node.value = 0.0;
 
+        // TODO: WRITE THIS SOMEWHERE parent does not uses this information
+        node.software = "";
+        node.software_version = "";
+        node.registered_emotions.clear();
+        node.registered_values.clear();
+    }
+
+    bool Manager::update_tree_relevance_emotional(EmotionalRelevance& node, const EmotionalRelevance& child, bool is_leaf) {
+        // TODO: WRITE THIS: children_emotions/values are keep ordered by emotion number
+        // TODO: WRITE THIS keep max values on arrays and single field.
+        ROS_DEBUG_STREAM(" --> emo: node (pre) (" << node.emotion << ", " << node.value << ")");
+        ROS_DEBUG_STREAM(" -->      child      (" << child.emotion << ", " << child.value << ")");
+        if (is_leaf) {
+            // update just one emotion
+            if (child.value > node.children_values[child.emotion]) {
+                node.children_values[child.emotion] = child.value;
+            }
+        } else {
+            // update all emotions
+            std::vector<int32_t >::const_iterator e_it = child.children_emotions.begin();
+            std::vector<float>::const_iterator f_it = child.children_values.begin();
+            for (; e_it != child.children_emotions.end() && f_it != child.children_values.end(); ++e_it, ++f_it) {
+                if (*f_it > node.children_values[*e_it]) {
+                    // keep max on list
+                    node.children_values[*e_it] = *f_it;
+                }
+            }
+
+        }
+
+        // update max emotion
+        if (child.value > node.value) {
+            node.emotion = child.emotion;
+            node.value = child.value;
+        }
+        ROS_DEBUG_STREAM(" -->      node (post)(" << node.emotion << ", " << node.value << ")");
         return true;
     }
 
@@ -282,7 +346,15 @@ namespace ltm {
             return true;
         }
 
-        bool first_child = true;
+        // init fields
+        update_tree_tags_init(updated_episode);
+        update_tree_info_init(updated_episode.info);
+        update_tree_when_init(updated_episode.when);
+        update_tree_where_init(updated_episode.where);
+        update_tree_what_init(updated_episode.what);
+        update_tree_relevance_init(updated_episode.relevance);
+
+        // process children
         bool is_leaf;
         bool result = true;
         std::vector<geometry_msgs::Point> positions;
@@ -295,15 +367,16 @@ namespace ltm {
 
             // update components
             result = result && update_tree_tags(updated_episode, child);
-            result = result && update_tree_info(updated_episode.info, child.info, first_child, is_leaf);
-            result = result && update_tree_when(updated_episode.when, child.when, first_child);
-            result = result && update_tree_where(updated_episode.where, child.where, first_child, is_leaf, uid, child.uid, positions);
-            result = result && update_tree_what(updated_episode.what, child.what, first_child, is_leaf);
-            result = result && update_tree_relevance(updated_episode.relevance, child.relevance, first_child, is_leaf);
-            first_child = false;
+            result = result && update_tree_info(updated_episode.info, child.info);
+            result = result && update_tree_when(updated_episode.when, child.when);
+            result = result && update_tree_where(updated_episode.where, child.where, is_leaf, uid, child.uid, positions);
+            result = result && update_tree_what(updated_episode.what, child.what, is_leaf);
+            result = result && update_tree_relevance(updated_episode.relevance, child.relevance, is_leaf);
         }
+        // finish fields
         result = result && update_tree_where_last(updated_episode.where, positions);
 
+        // save updated episode
         // TODO: update instead of remove/insert
         result = result && remove(uid);
         result = result && insert(updated_episode);

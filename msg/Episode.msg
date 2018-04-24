@@ -2,6 +2,7 @@
 uint32 uid
 uint8 type
 string[] tags
+string[] children_tags
 ltm/Info info
 
 # Episodic tree information

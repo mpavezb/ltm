@@ -49,15 +49,29 @@ namespace ltm {
         // update tree methods
         // -------------------------------------------------------------------------------------------------------------
         bool update_tree_node(int uid, Episode &updated_episode);
+
+        // init methods
+        void update_tree_tags_init(Episode &node);
+        void update_tree_info_init(Info &node);
+        void update_tree_when_init(When &node);
+        void update_tree_where_init(Where &node);
+        void update_tree_what_init(What &node);
+        void update_tree_relevance_init(Relevance &node);
+        void update_tree_relevance_historical_init(HistoricalRelevance &node);
+        void update_tree_relevance_emotional_init(EmotionalRelevance &node);
+
+        // add child information methods
         bool update_tree_tags(Episode &node, const Episode &child);
-        bool update_tree_info(Info &node, const Info &child, bool first, bool is_leaf);
-        bool update_tree_when(When &node, const When &child, bool first);
-        bool update_tree_where(Where &node, const Where &child, bool first, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions);
+        bool update_tree_info(Info &node, const Info &child);
+        bool update_tree_when(When &node, const When &child);
+        bool update_tree_where(Where &node, const Where &child, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions);
+        bool update_tree_what(What &node, const What &child, bool is_leaf);
+        bool update_tree_relevance(Relevance &node, const Relevance &child, bool is_leaf);
+        bool update_tree_relevance_historical(HistoricalRelevance &node, const HistoricalRelevance &child);
+        bool update_tree_relevance_emotional(EmotionalRelevance &node, const EmotionalRelevance &child, bool is_leaf);
+
+        // ending methods
         bool update_tree_where_last(Where &node, std::vector<geometry_msgs::Point> &positions);
-        bool update_tree_what(What &node, const What &child, bool first, bool is_leaf);
-        bool update_tree_relevance(Relevance &node, const Relevance &child, bool first, bool is_leaf);
-        bool update_tree_relevance_historical(HistoricalRelevance &node, const HistoricalRelevance &child, bool first);
-        bool update_tree_relevance_emotional(EmotionalRelevance &node, const EmotionalRelevance &child, bool first, bool is_leaf);
 
         // tools
         // -------------------------------------------------------------------------------------------------------------
