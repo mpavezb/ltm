@@ -1,7 +1,3 @@
-# Episodic tree information 
-int32 parent_id
-int32[] children_ids
-
 # TODO: feature msg structure
 # TODO: better handling of key-value pairs
 string[] features

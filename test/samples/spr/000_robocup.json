@@ -1,0 +1,13 @@
+{
+    "uid": 0,
+    "type": 2,
+    "parent_id": 0,
+    "children_ids": [1],
+    "tags": ["robocup"],
+    "children_tags": [],
+    "info": "~",
+    "when": "~",
+    "where": "~",
+    "what": "~",
+    "relevance": "~"
+}

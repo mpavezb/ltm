@@ -1,0 +1,12 @@
+{
+    "uid": 8,
+    "type": 1,
+    "parent_id": 3,
+    "children_ids": [9, 10],
+    "tags": ["crowd_analysis"],
+    "info": "~",
+    "when": "~",
+    "where": "~",
+    "what": "~",
+    "relevance": "~"
+}

@@ -1,0 +1,5 @@
+# target episode uid
+uint32 uid
+---
+bool succeeded
+ltm/Episode episode

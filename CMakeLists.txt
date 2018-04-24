@@ -42,6 +42,8 @@ add_message_files(
 add_service_files(
     FILES
     AddEpisode.srv
+    UpdateTree.srv
+    GetEpisode.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -76,7 +78,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include include
     LIBRARIES
-    CATKIN_DEPENDS roscpp std_msgs std_srvs message_runtime
+    CATKIN_DEPENDS roscpp std_msgs std_srvs message_runtime geometry_msgs sensor_msgs warehouse_ros_mongo
     DEPENDS
 )
 
@@ -91,7 +93,7 @@ include_directories(
 )
 link_directories(${catkin_LINK_DIRS})
 
-add_executable(ltm_server src/server.cpp)
+add_executable(ltm_server src/server.cpp src/db_manager.cpp src/geometry.cpp)
 add_dependencies(ltm_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ltm_server ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 

@@ -14,6 +14,9 @@ float32[] registered_values   # e.g. [0.6, 0.2, 0.1, 0.1, ...]
 # - value is a floating number between 0 (minimum) and 1 (max emotion strength).
 int32 emotion  # e.g. 3 (SURPRISE)
 float32 value  # e.g. 0.5
+int32[] children_emotions
+float32[] children_values
+
 
 # Available emotions (Plutchik's Wheel of emotions).
 uint8 JOY=0

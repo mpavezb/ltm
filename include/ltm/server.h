@@ -5,32 +5,39 @@
 #include <string>
 #include <iostream>
 #include <ros/ros.h>
-#include <ltm/Episode.h>
-#include <ltm/AddEpisode.h>
 #include <std_srvs/Empty.h>
-#include <std_srvs/Trigger.h>
+#include <ltm/AddEpisode.h>
+#include <ltm/UpdateTree.h>
+#include <ltm/GetEpisode.h>
+#include <ltm/db_manager.h>
 
-
-#include <warehouse_ros/message_with_metadata.h>
-#include <warehouse_ros_mongo/database_connection.h>
-
-typedef warehouse_ros::MessageWithMetadata<ltm::Episode> EpisodeWithMetadata;
-typedef warehouse_ros::MessageCollection<ltm::Episode> EpisodeCollection;
+typedef boost::scoped_ptr<ltm::Manager> ManagerPtr;
 
 namespace ltm {
 
     class Server {
 
     private:
-        std::string _name;
+
+        // params
+        std::string _db_name;
+        std::string _db_collection_name;
+        std::string _db_host;
+        int _db_port;
+        float _db_timeout;
+
+        // servers
         ros::ServiceServer _status_service;
         ros::ServiceServer _drop_db_service;
+        ros::ServiceServer _get_episode_service;
         ros::ServiceServer _add_episode_service;
-        ros::ServiceServer _append_dummies_service;
-        warehouse_ros_mongo::MongoDatabaseConnection _conn;
+        ros::ServiceServer _update_tree_service;
 
+        // DB
+        ManagerPtr _db;
+
+        // internal methods
         void show_status();
-        std::string to_short_string(const ltm::Episode& episode);
 
     public:
 
@@ -38,17 +45,18 @@ namespace ltm {
 
         virtual ~Server();
 
-//        EpisodeCollection getCollection();
-
         // ==========================================================
         // ROS Services
         // ==========================================================
 
         /**/
-        bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);
+        bool get_episode_service(ltm::GetEpisode::Request  &req, ltm::GetEpisode::Response &res);
 
         /**/
-        bool append_dummies_service(std_srvs::Trigger::Request  &req, std_srvs::Trigger::Response &res);
+        bool update_tree_service(ltm::UpdateTree::Request &req, ltm::UpdateTree::Response &res);
+
+        /**/
+        bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);
 
         /**/
         bool status_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
