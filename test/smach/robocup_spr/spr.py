@@ -13,6 +13,7 @@ import blind_man_game
 
 def get_instance():
     sm = smach.StateMachine(outcomes=['succeeded'])
+    sm.tags = ["robocup", "stage_1", "test"]
     with sm:
 
         smach.StateMachine.add(

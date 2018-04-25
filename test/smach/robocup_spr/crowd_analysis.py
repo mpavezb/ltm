@@ -9,6 +9,7 @@ from states import Talk, LookForPeople, AnalyzePeople
 
 def get_look_for_crowd_sm():
     sm = smach.StateMachine(outcomes=['succeeded'])
+    sm.tags = ["crowd_analysis", "look_for_crowd"]
 
     with sm:
         smach.StateMachine.add(
@@ -34,7 +35,7 @@ def get_look_for_crowd_sm():
 
 def get_analyze_crowd_sm():
     sm = smach.StateMachine(outcomes=['succeeded'])
-
+    sm.tags = ["crowd_analysis"]
     with sm:
 
         smach.StateMachine.add(
@@ -54,7 +55,7 @@ def get_analyze_crowd_sm():
 
 def get_instance():
     sm = smach.StateMachine(outcomes=['succeeded'])
-
+    sm.tags = ["crowd_analysis"]
     with sm:
         smach.StateMachine.add(
             'INIT_TALK',

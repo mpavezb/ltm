@@ -8,6 +8,7 @@ import smach
 class Talk(smach.State):
     def __init__(self, text=""):
         smach.State.__init__(self, outcomes=['succeeded'])
+        self.tags = ["talk"]
         self.text = text
 
     def execute(self, userdata):
@@ -19,6 +20,7 @@ class Talk(smach.State):
 class LookForPeople(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'])
+        self.tags = ["look_for_crowd"]
 
     def execute(self, userdata):
         rospy.logwarn('[state]| Look for people |: I am looking for people. Where are you hiding?.')
@@ -29,6 +31,7 @@ class LookForPeople(smach.State):
 class AnalyzePeople(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded'])
+        self.tags = ["analyze_crowd"]
 
     def execute(self, userdata):
         rospy.logwarn('[state]| Analyze people |: mmm ... <beep> i am gathering information about you <bop>.')

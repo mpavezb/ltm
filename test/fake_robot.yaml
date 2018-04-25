@@ -1,0 +1,6 @@
+
+where:
+  locations: ["living_room", "bedroom", "kitchen", "hallway", "bathroom", "garden"]
+  areas: ["arena_1", "arena_2"]
+  map_name: "fake_map"
+  frame_id: "/map"
