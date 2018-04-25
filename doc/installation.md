@@ -89,3 +89,11 @@ git clone https://github.com/mpavezb/ltm.git
 cd .. 
 catkin_make
 ```
+
+
+## Testing
+
+```bash
+# smach
+sudo apt-get install ros-kinetic-smach ros-kinetic-smach-viewer
+```
