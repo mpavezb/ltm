@@ -14,3 +14,4 @@ This projects provides a LTM implementation with Episodic, Semantic and Emotiona
 
 - [Thesis](https://github.com/mpavezb/memoria) (in spanish).
 - [Installation guide](doc/installation.md)
+- [Tutorials](doc/tutorials.md)

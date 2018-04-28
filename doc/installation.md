@@ -86,23 +86,6 @@ roscd && cd ../src
 git clone https://github.com/mpavezb/ltm.git
 
 # compile
-cd .. 
+roscd && cd ..
 catkin_make
-```
-
-
-## Testing
-
-```bash
-# smach
-sudo apt-get install ros-kinetic-smach ros-kinetic-smach-viewer
-
-# video to rostopic
-sudo apt-get install ros-kinetic-video-stream-opencv ros-kinetic-image-view ros-kinetic-rviz
-
-# download videos
-roscd ltm
-cd test/media
-./download_videos.bash
-
 ```
