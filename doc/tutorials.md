@@ -62,7 +62,7 @@ roslaunch ltm_samples ltm_load_file.launch
 roslaunch ltm_samples ltm_load_folder.launch
 ```
 
-### Deploy a fake robot to add episodes to generate episode information
+### Deploy a fake robot to generate dummy episode information
 
 ```bash
 # this will deploy a fake robot which can generate dummy emotional and
@@ -80,4 +80,16 @@ rostopic list | grep fake/
 rosservice list | grep fake/
 rosparam list | grep fake/
 
+```
+
+### Run a smach state machine with dummy states
+
+```bash
+# this machine resembles the SPR test of robocup@home competition.
+rosrun ltm_samples spr.py
+
+# launch the smach viewer
+# the second command will show the smach_viewer.py node displaying the machine states.
+roslaunch ltm_samples smach_spr.launch --screen
+roslaunch ltm_samples smach_spr.launch viewer:=true --screen
 ```
