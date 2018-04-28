@@ -1,8 +1,0 @@
-<launch>
-
-    <node name="ltm_json_loader" type="json_loader" pkg="ltm" ns="robot" output="screen">
-        <!-- filename -->
-        <param name="source" type="str" value="$(find ltm)/test/json/episode.json"/>
-    </node>
-
-</launch>

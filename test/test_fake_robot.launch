@@ -1,7 +1,0 @@
-<launch>
-
-    <node name="fake" type="fake_robot.py" pkg="ltm" ns="robot" output="screen">
-        <rosparam command="load" file="$(find ltm)/test/fake_robot.yaml"/>
-    </node>
-
-</launch>
