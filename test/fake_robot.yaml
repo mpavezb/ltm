@@ -4,3 +4,8 @@ where:
   areas: ["arena_1", "arena_2"]
   map_name: "fake_map"
   frame_id: "/map"
+
+relevance:
+  emotional:
+    software: "fake_robot_emo_generator"
+    software_version: "1.0.0"
