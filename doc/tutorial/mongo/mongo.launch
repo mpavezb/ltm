@@ -1,9 +1,0 @@
-<launch>
-
-  <node name="mongo" type="mongo_wrapper_ros.py" pkg="warehouse_ros">
-    <param name="overwrite" value="true"/>
-    <param name="database_location" value="/path/to/my/db"/>
-  </node>
-
-  <param name="warehouse_port" value="27019"/>
-</launch>
