@@ -1,8 +1,8 @@
 # Tutorials: The ltm_samples package
 
-In order to keep the base code clean, all testing code, samples and scripts (and testing dependencies) have been moved to an standalone repository, the [ltm_samples](https://github.com/mpavezb/ltm_samples) ROS package.
+In order to keep the codebase clean, all testing code, samples and scripts (and testing dependencies) have been moved to an standalone repository, the [ltm_samples](https://github.com/mpavezb/ltm_samples) ROS package.
 
-That package serves as a guide for new users to develop custom LTM plugins, designed for his robotic platform.
+That package serves as a guide for new users to develop custom LTM plugins, designed for their robotic system needs.
 
 
 ## Requirements
