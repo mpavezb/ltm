@@ -14,6 +14,9 @@ sudo apt-get install ros-kinetic-smach ros-kinetic-smach-viewer
 # install ROS video to rostopic suite.
 sudo apt-get install ros-kinetic-video-stream-opencv ros-kinetic-image-view
 
+# python-faker
+pip install faker
+
 # download the ltm_samples package.
 roscd && cd ../src
 git clone https://github.com/mpavezb/ltm_samples.git
@@ -29,6 +32,12 @@ catkin_make
 ```bash
 # download video samples for image streaming.
 rosrun ltm_samples download_videos.bash
+
+# download image samples for the episode generator.
+rosrun ltm_samples download_images.bash
+
+# Note: As the download process can fail sometimes, repeat 
+# each command until the output only contains green characters.
 ```
 
 

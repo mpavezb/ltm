@@ -10,8 +10,8 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 find_package(catkin REQUIRED
     roscpp
     rostest
-    std_msgs
     std_srvs
+    std_msgs
     geometry_msgs
     sensor_msgs
     message_generation
@@ -78,7 +78,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include include
     LIBRARIES
-    CATKIN_DEPENDS roscpp std_msgs std_srvs message_runtime geometry_msgs sensor_msgs warehouse_ros_mongo
+    CATKIN_DEPENDS roscpp std_srvs std_msgs geometry_msgs sensor_msgs message_runtime warehouse_ros_mongo
     DEPENDS
 )
 
