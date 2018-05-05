@@ -1,6 +1,7 @@
 #ifndef LTM_DB_MANAGER_H
 #define LTM_DB_MANAGER_H
 
+#include <set>
 #include <string>
 #include <iostream>
 #include <ltm/Episode.h>
@@ -33,6 +34,10 @@ namespace ltm {
         // db handlers
         warehouse_ros_mongo::MongoDatabaseConnection _conn;
         EpisodeCollectionPtr _coll;
+
+        // reserved uid
+        std::set<int> _reserved_uids;
+        std::set<int> _db_uids;
 
         // metadata methods
         // -------------------------------------------------------------------------------------------------------------
@@ -93,6 +98,7 @@ namespace ltm {
         bool remove(int uid);
 
         // queries
+        int reserve_uid();
         int count();
         bool has(int uid);
         bool update_tree(int uid);

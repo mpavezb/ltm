@@ -22,9 +22,10 @@ namespace ltm {
         _db->setup();
 
         // Announce services
-        _get_episode_service = priv.advertiseService("get_episode", &Server::get_episode_service, this);
-        _update_tree_service = priv.advertiseService("update_tree", &Server::update_tree_service, this);
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
+        _get_episode_service = priv.advertiseService("get_episode", &Server::get_episode_service, this);
+        _register_episode_service = priv.advertiseService("register_episode", &Server::register_episode_service, this);
+        _update_tree_service = priv.advertiseService("update_tree", &Server::update_tree_service, this);
         _status_service = priv.advertiseService("status", &Server::status_service, this);
         _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
 
@@ -53,6 +54,13 @@ namespace ltm {
         res.episode = *ep_ptr;
         res.succeeded = (uint8_t) true;
         return true;
+    }
+
+    bool Server::register_episode_service(ltm::RegisterEpisode::Request &req, ltm::RegisterEpisode::Response &res) {
+        int value = _db->reserve_uid();
+        res.uid = (uint32_t) value;
+        ROS_DEBUG_STREAM("[REGISTER] Reserving random uid: " << value);
+        return (value >= 0);
     }
 
     bool Server::update_tree_service(ltm::UpdateTree::Request &req, ltm::UpdateTree::Response &res) {

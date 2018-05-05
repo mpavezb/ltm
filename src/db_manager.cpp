@@ -3,6 +3,11 @@
 #include <algorithm>
 #include <sstream>
 
+// get random uid
+#include <time.h>
+#include <limits>
+#include <stdlib.h>
+
 namespace ltm {
 
     Manager::Manager(const std::string &name, const std::string &collection, const std::string &host, uint port,
@@ -12,6 +17,11 @@ namespace ltm {
         _db_host = host;
         _db_port = port;
         _db_timeout = timeout;
+
+        // reserved uids are cleared on startup
+        _reserved_uids.clear();
+        _db_uids.clear();
+        std::srand(time(NULL));
     }
 
     Manager::~Manager() {}
@@ -462,6 +472,49 @@ namespace ltm {
 
     int Manager::count() {
         return _coll->count();
+    }
+
+    int Manager::reserve_uid() {
+        // TODO: find better way, maybe select the max_uid+1
+        // Returns a pseudo-random integral number in the range between 0 and RAND_MAX.
+        uint32_t max_int32 = std::numeric_limits<uint32_t>::max();
+        int max_int = std::numeric_limits<int>::max();
+        int upper_bound = max_int32 > max_int ? max_int : max_int32;
+
+        int db_size = count();
+        int reserved_ids = (int)_reserved_uids.size();
+        if (upper_bound <= db_size + reserved_ids) {
+            ROS_WARN_STREAM(
+                    "There aren't any available uids. Max entries: "
+                    << upper_bound
+                    << ". LTM DB has (" << db_size << ") entries."
+                    << " There are (" << reserved_ids << ") reserved uids."
+            );
+            return -1;
+        }
+
+        int value;
+        std::set<int>::iterator it;
+        while (true) {
+            value = rand() % upper_bound;
+
+            // value is already reserved
+            it = _reserved_uids.find(value);
+            if (it != _reserved_uids.end()) continue;
+
+            // value is in db cache
+            it = _db_uids.find(value);
+            if (it != _db_uids.end()) continue;
+
+            // value is already in DB
+            if (has(value)) {
+                _db_uids.insert(value);
+                continue;
+            }
+            break;
+        }
+        _reserved_uids.insert(value);
+        return value;
     }
 
     bool Manager::has(int uid) {
