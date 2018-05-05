@@ -27,28 +27,30 @@ class LTMData(object):
         self.uid = None
         self.type = None
         self.label = None
+        self.tags = None
 
     def get_episode(self):
         episode = Episode()
         episode.uid = self.uid
         episode.type = self.type
         episode.when = self.when
+        episode.tags = self.tags
         return episode
 
 
-def node_start_cb(self, manager):
+def cb_node_start(self, manager):
     manager.cb_node_start(self)
 
 
-def node_end_cb(self, manager):
+def cb_node_end(self, manager):
     manager.cb_node_end(self)
 
 
-def leaf_start_cb(self, manager):
+def cb_leaf_start(self, manager):
     manager.cb_leaf_start(self)
 
 
-def leaf_end_cb(self, manager):
+def cb_leaf_end(self, manager):
     manager.cb_leaf_end(self)
 
 
@@ -59,7 +61,7 @@ class Manager(object):
 
     def __init__(self):
         # ROS clients
-        rospy.loginfo("Building LTM/SMACH interface manager...")
+        rospy.loginfo("[LTM]: Building LTM/SMACH interface manager...")
         self.add_episode_client = None
         self.register_episode_client = None
 
@@ -68,11 +70,11 @@ class Manager(object):
         self.register_episode_client = rospy.ServiceProxy('/robot/ltm/register_episode', RegisterEpisode)
 
         # Wait for ROS services
-        rospy.loginfo("... waiting LTM services.")
+        rospy.loginfo("[LTM]: ... waiting LTM services.")
         # self.add_episode_client.wait_for_service()
         print self.register_episode_client.resolved_name
         self.register_episode_client.wait_for_service()
-        rospy.loginfo("... LTM server is up and running.")
+        rospy.loginfo("[LTM]: ... LTM server is up and running.")
 
     def introspect(self, state, label="root"):
         if isinstance(state, smach.Container):
@@ -116,12 +118,13 @@ class Manager(object):
         # Those hooks have access to this Manager instance (self) and all state data.
 
         # set default LTM data field
-        state.ltm = LTMData()
-        state.ltm.label = label
+        if self.is_registered(state):
+            state.ltm.label = label
 
         if isinstance(state, smach.Container):
             # Node is a state machine.
-            self.setup_callbacks(state, node_start_cb, node_end_cb)
+            if self.is_registered(state):
+                self.setup_callbacks(state, cb_node_start, cb_node_end)
 
             # recurse towards leafs
             children = state.get_children()
@@ -129,7 +132,19 @@ class Manager(object):
                 self.setup_tree(children[child_label], child_label)
         else:
             # Node is a state (leaf).
-            self.setup_callbacks(state, leaf_start_cb, leaf_end_cb)
+            if self.is_registered(state):
+                self.setup_callbacks(state, cb_leaf_start, cb_leaf_end)
+
+    @staticmethod
+    def register_state(state, tags):
+        rospy.loginfo("[LTM]: - registering state (" + str(state.__class__.__name__) + ") with tags: " + str(tags))
+        state.ltm = LTMData()
+        state.ltm.tags = tags
+
+    @staticmethod
+    def is_registered(state):
+        # Node is considered as registered for LTM purposes if state.ltm attribute is present.
+        return hasattr(state, 'ltm') and isinstance(state.ltm, LTMData)
 
     def cb_leaf_start(self, state):
         # TODO: try/except for ROS stuff.
@@ -149,7 +164,14 @@ class Manager(object):
         rospy.logerr("[LEAF][" + str(state.ltm.uid) + "][" + state.ltm.label + "] - END callback.")
 
     def cb_node_start(self, state):
+        state.ltm.type = Episode.EPISODE
+        try:
+            state.ltm.uid = self.register_episode_client()
+        except rospy.ServiceException:
+            # There aren't any available uids. DB is full.
+            pass
         rospy.logerr("[NODE][" + str(state.ltm.uid) + "][" + state.ltm.label + "] - START callback.")
 
     def cb_node_end(self, state):
+        episode = state.ltm.get_episode()
         rospy.logerr("[NODE][" + str(state.ltm.uid) + "][" + state.ltm.label + "] - END callback.")

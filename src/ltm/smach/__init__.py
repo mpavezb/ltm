@@ -9,3 +9,7 @@ from manager import Manager
 def setup(machine):
     # Manager().introspect(machine)
     Manager().setup(machine)
+
+
+def register_state(state, tags=list()):
+    Manager().register_state(state, tags)
