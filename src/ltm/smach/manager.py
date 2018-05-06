@@ -3,8 +3,8 @@
 __author__ = 'Matías Pavez'
 __email__ = 'matias.pavez@ing.uchile.cl'
 
-import smach
 import types
+import smach
 import rospy
 from ltm.srv import *
 from ltm.msg import *
@@ -202,14 +202,16 @@ class Manager(object):
     def update_branch_uids(self, state):
         # retrieve parent id
         child_id = state.ltm.uid
-        parent_id = self.update_branch_uids_rec(state, child_id)
+        child_label = state.ltm.label
+        (parent_id, parent_label) = self.update_branch_uids_rec(state, child_id, child_label)
 
         # update data
-        rospy.logdebug("[LTM]: - node (" + str(child_id) + "): setting parent_id (" + str(parent_id) + ")")
+        rospy.logdebug("[LTM]: - Node [" + parent_label + "] was set as parent of node [" + state.ltm.label
+                       + "]. (" + str(parent_id) + ") > (" + str(child_id) + ").")
         data = self.registered_episodes[child_id]
         data.parent_id = parent_id
 
-    def update_branch_uids_rec(self, state, child_id):
+    def update_branch_uids_rec(self, state, child_id, child_label):
         """
         Updates parent_id of the state and children_ids of the next parent.
         returns the next parent_id
@@ -221,27 +223,29 @@ class Manager(object):
         # - add child_id
         if not parent:
             root_id = state.ltm.uid
+            root_label = state.ltm.label
             data = self.registered_episodes[root_id]
             if child_id != root_id:
                 data.children_ids.add(child_id)
-                rospy.logdebug("[LTM]: - node (" + str(root_id) + "): adding child_id ("
-                              + str(child_id) + ") --> " + str(list(data.children_ids)))
+                rospy.logdebug("[LTM]: - Node [" + child_label + "] was added as child of node [" + root_label
+                               + "].\n -> (" + str(root_id) + ") > " + str(list(data.children_ids)))
             # No child should get this value!. All children will get it from the next if statement.
-            return 0
+            return 0, "<void>"
 
         # parent state is registered (and running)
         # - add child_id
         # - return parent_id
         if parent.ltm.is_registered():
             parent_id = parent.ltm.uid
+            parent_label = parent.ltm.label
             data = self.registered_episodes[parent_id]
             data.children_ids.add(child_id)
-            rospy.logdebug("[LTM]: - node (" + str(parent_id) + "): adding child_id ("
-                          + str(child_id) + ") --> " + str(list(data.children_ids)))
-            return parent_id
+            rospy.logdebug("[LTM]: - Node [" + child_label + "] was added as child of node [" + parent_label +
+                           "].\n -> (" + str(parent_id) + ") > " + str(list(data.children_ids)))
+            return parent_id, parent_label
 
         # parent is not registered: recursion
-        return self.update_branch_uids_rec(parent, child_id)
+        return self.update_branch_uids_rec(parent, child_id, child_label)
 
     def cb_leaf_start(self, state):
         # TODO: try/except for ROS stuff.
@@ -249,9 +253,9 @@ class Manager(object):
         try:
             res = self.register_episode_client()
         except rospy.ServiceException:
-            rospy.logwarn("There aren't any available uids. DB is full. This state will not be recorded.")
+            rospy.logwarn("[LTM]: There aren't any available uids. DB is full. This state will not be recorded.")
             return
-        rospy.logdebug("[LEAF][" + str(res.uid) + "][" + state.ltm.label + "] - START callback.")
+        rospy.logdebug("[LTM]: - LEAF [" + state.ltm.label + "](" + str(res.uid) + ") - START callback.")
 
         # set new uid
         state.ltm.clear()
@@ -272,7 +276,7 @@ class Manager(object):
     def cb_leaf_end(self, state):
         # TODO: try/except for ROS stuff.
         uid = state.ltm.uid
-        rospy.logdebug("[LEAF][" + str(uid) + "][" + state.ltm.label + "] - END callback.")
+        rospy.logdebug("[LTM]: - LEAF [" + state.ltm.label + "](" + str(uid) + ") - END callback.")
 
         # build new episode information
         data = self.registered_episodes[uid]
@@ -292,9 +296,9 @@ class Manager(object):
         try:
             res = self.register_episode_client()
         except rospy.ServiceException:
-            rospy.logwarn("There aren't any available uids. DB is full. This state will not be recorded.")
+            rospy.logwarn("[LTM]: There aren't any available uids. DB is full. This state will not be recorded.")
             return
-        rospy.logerr("[NODE][" + str(res.uid) + "][" + state.ltm.label + "] - START callback.")
+        rospy.logdebug("[LTM]: - NODE [" + state.ltm.label + "](" + str(res.uid) + ") - START callback.")
 
         # set new uid
         state.ltm.clear()
@@ -314,7 +318,7 @@ class Manager(object):
 
     def cb_node_end(self, state):
         uid = state.ltm.uid
-        rospy.logerr("[NODE][" + str(uid) + "][" + state.ltm.label + "] - END callback.")
+        rospy.logdebug("[LTM]: - NODE [" + state.ltm.label + "](" + str(uid) + ") - END callback.")
 
         # build new episode information
         data = self.registered_episodes[uid]
@@ -322,8 +326,14 @@ class Manager(object):
         episode.tags = list(state.ltm.tags)
         episode.when.end = rospy.Time.now()
 
+        # episode did not register children -> set as LEAF and warn.
+        if not episode.children_ids:
+            episode.type = Episode.LEAF
+            rospy.logwarn("[LTM]: - NODE [" + state.ltm.label + "](" + str(uid)
+                          + ") does not register any children. Considering this episode as a LEAF.")
+
         # send episode to server
-        rospy.logwarn("[LTM]: sending episode (" + str(uid) + ") to LTM server.")
+        rospy.logwarn("[LTM]: - NODE [" + state.ltm.label + "](" + str(uid) + "): sending episode to LTM server.")
 
         # remove traces
         state.ltm.clear()
