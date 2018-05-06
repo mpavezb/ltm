@@ -21,6 +21,10 @@ namespace ltm {
         _db.reset(new Manager(_db_name, _db_collection_name, _db_host, (uint)_db_port, _db_timeout));
         _db->setup();
 
+        // Plugins manager
+        _pl.reset(new PluginsManager());
+        _pl->setup();
+
         // Announce services
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
         _get_episode_service = priv.advertiseService("get_episode", &Server::get_episode_service, this);

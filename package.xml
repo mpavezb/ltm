@@ -31,6 +31,7 @@
     <depend>sensor_msgs</depend>
     <depend>smach</depend>
     <depend>smach_ros</depend>
+    <depend>pluginlib</depend>
 
 
     <!-- build dependencies -->

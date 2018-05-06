@@ -17,8 +17,10 @@
 
 // LTM
 #include <ltm/db_manager.h>
+#include <ltm/plugins_manager.h>
 
 typedef boost::scoped_ptr<ltm::Manager> ManagerPtr;
+typedef boost::scoped_ptr<ltm::PluginsManager> PluginsManagerPtr;
 
 namespace ltm {
 
@@ -42,6 +44,9 @@ namespace ltm {
 
         // DB
         ManagerPtr _db;
+
+        // Plugins
+        PluginsManagerPtr _pl;
 
         // internal methods
         void show_status();

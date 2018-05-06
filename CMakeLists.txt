@@ -16,6 +16,7 @@ find_package(catkin REQUIRED
     sensor_msgs
     message_generation
     warehouse_ros_mongo
+    pluginlib
 )
 
 catkin_python_setup()
@@ -94,7 +95,7 @@ include_directories(
 )
 link_directories(${catkin_LINK_DIRS})
 
-add_executable(ltm_server src/server.cpp src/db_manager.cpp src/geometry.cpp)
+add_executable(ltm_server src/server.cpp src/db_manager.cpp src/geometry.cpp src/plugins_manager.cpp)
 add_dependencies(ltm_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ltm_server ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
