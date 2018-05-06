@@ -52,6 +52,10 @@ class LoaderNode(object):
             req = AddEpisodeRequest()
             req.episode = episode
             req.replace = True
+            req.gather_emotions = False
+            req.gather_entities = False
+            req.gather_streams = False
+            req.gather_where = False
             res = self.add_episode_client(req)
             if res.succeeded:
                 self.saved_episodes.append(episode.uid)

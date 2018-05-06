@@ -3,5 +3,14 @@ ltm/Episode episode
 
 # replace if already exists
 bool replace
+
+# The episode field can be incomplete. Each of these
+# fields triggers the related plugin in order to gather
+# episodic information
+bool gather_streams   # runs stream related plugins
+bool gather_entities  # runs entity related plugins
+bool gather_where     # runs location related plugins
+bool gather_emotions  # runs emotion related pluginso
+
 ---
 bool succeeded
