@@ -6,8 +6,8 @@ string[] children_tags
 ltm/Info info
 
 # Episodic tree information
-int32 parent_id
-int32[] children_ids
+uint32 parent_id
+uint32[] children_ids
 
 # Episodic LTM information
 ltm/What  what

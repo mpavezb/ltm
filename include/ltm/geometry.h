@@ -24,9 +24,10 @@ namespace ltm {
     void boost_hull(const std::vector<geometry_msgs::Point> &points, std::vector<geometry_msgs::Point> &hull);
 
     std::string point_vector_to_str(const std::vector<geometry_msgs::Point> &array);
+
     geometry_msgs::Point polygon_centroid_2d(const std::vector<geometry_msgs::Point> &points);
 
-    bool equals_point(const geometry_msgs::Point& p1, const geometry_msgs::Point& p2);
+    bool equals_point(const geometry_msgs::Point &p1, const geometry_msgs::Point &p2);
 
 }
 

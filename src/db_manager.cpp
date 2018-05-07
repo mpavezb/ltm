@@ -38,7 +38,7 @@ namespace ltm {
     void Manager::make_meta_episode(const Episode& node, MetadataPtr meta) {
         meta->append("uid", (int) node.uid);
         meta->append("type", node.type);
-        meta->append("parent_id", node.parent_id);
+        meta->append("parent_id", (int) node.parent_id);
 
         // TODO: REQUIRES META ARRAY
         // meta->append("children_ids", node.children_ids);
@@ -368,7 +368,7 @@ namespace ltm {
         bool is_leaf;
         bool result = true;
         std::vector<geometry_msgs::Point> positions;
-        std::vector<int32_t>::const_iterator c_it;
+        std::vector<uint32_t>::const_iterator c_it;
         Episode child;
         for (c_it = ep_ptr->children_ids.begin(); c_it != ep_ptr->children_ids.end(); ++c_it) {
 

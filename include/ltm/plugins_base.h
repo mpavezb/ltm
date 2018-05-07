@@ -1,51 +1,73 @@
 #ifndef LTM_PLUGINS_BASE_H
 #define LTM_PLUGINS_BASE_H
 
-#include <ltm/EmotionalRelevance.h>
+#include <ltm/Episode.h>
 
 namespace ltm {
     namespace plugin {
 
         class EmotionBase {
-            public:
-            virtual void initialize(const std::string& param_ns) = 0;
-            virtual void register_episode(uint32_t uid) = 0;
-            virtual void unregister_episode(uint32_t uid) = 0;
-            virtual void collect(uint32_t uid, ltm::EmotionalRelevance& msg) = 0;
-            virtual ~EmotionBase(){}
+        public:
+            virtual void initialize(const std::string &param_ns) = 0;
 
-            protected:
-            EmotionBase(){}
+            virtual void register_episode(uint32_t uid) = 0;
+
+            virtual void unregister_episode(uint32_t uid) = 0;
+
+            virtual void collect(uint32_t uid, ltm::EmotionalRelevance &msg) = 0;
+
+            virtual ~EmotionBase() {}
+
+        protected:
+            EmotionBase() {}
         };
 
         class LocationBase {
         public:
-            virtual void initialize(double side_length) = 0;
-            virtual bool get_location() = 0;
-            virtual ~LocationBase(){}
+            virtual void initialize(const std::string &param_ns) = 0;
+
+            virtual void register_episode(uint32_t uid) = 0;
+
+            virtual void unregister_episode(uint32_t uid) = 0;
+
+            virtual void collect(uint32_t uid, ltm::Where &msg) = 0;
+
+            virtual ~LocationBase() {}
 
         protected:
-            LocationBase(){}
+            LocationBase() {}
         };
 
         class StreamBase {
         public:
-            virtual void initialize(double side_length) = 0;
-            virtual bool get_stream() = 0;
-            virtual ~StreamBase(){}
+            virtual void initialize(const std::string &param_ns) = 0;
+
+            virtual void register_episode(uint32_t uid) = 0;
+
+            virtual void unregister_episode(uint32_t uid) = 0;
+
+            virtual void collect(uint32_t uid, ltm::What &msg) = 0;
+
+            virtual ~StreamBase() {}
 
         protected:
-            StreamBase(){}
+            StreamBase() {}
         };
 
         class EntityBase {
         public:
-            virtual void initialize(double side_length) = 0;
-            virtual bool get_entity() = 0;
-            virtual ~EntityBase(){}
+            virtual void initialize(const std::string &param_ns) = 0;
+
+            virtual void register_episode(uint32_t uid) = 0;
+
+            virtual void unregister_episode(uint32_t uid) = 0;
+
+            virtual void collect(uint32_t uid, ltm::What &msg) = 0;
+
+            virtual ~EntityBase() {}
 
         protected:
-            EntityBase(){}
+            EntityBase() {}
         };
 
     }

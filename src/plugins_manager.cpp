@@ -61,7 +61,6 @@ namespace ltm {
         load_entity_plugins(entity_names);
     }
 
-
     void PluginsManager::load_emotion_plugin(std::string plugin_class) {
         // valid class
         if (plugin_class == "") {
@@ -107,7 +106,7 @@ namespace ltm {
 
         // initialize
         try {
-            _location_pl->initialize(10.0);
+            _location_pl->initialize("plugins/location/");
         } catch (...) {
             ROS_WARN_STREAM("Couldn't initialize the LTM location plugin of class <" << plugin_class << ">.");
             return;
@@ -142,7 +141,7 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize(10);
+                pl_ptr->initialize("plugin/streams/" + *it + "/");
             } catch (...) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Stream plugin of name (" << *it << ") and class <" << plugin_class
@@ -186,7 +185,7 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize(10.0);
+                pl_ptr->initialize("plugin/entities/" + *it + "/");
             } catch (...) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Entity plugin of name (" << *it << ") and class <" << plugin_class
@@ -204,4 +203,63 @@ namespace ltm {
         _use_entity_pls = !_entity_pls.empty();
     }
 
+    void PluginsManager::register_episode(uint32_t uid) {
+        if (_use_emotion_pl) _emotion_pl->register_episode(uid);
+        if (_use_location_pl) _location_pl->register_episode(uid);
+        if (_use_stream_pls) {
+            std::vector<StreamPluginPtr>::iterator stream_it;
+            for (stream_it = _stream_pls.begin(); stream_it != _stream_pls.end(); ++stream_it) {
+                (*stream_it)->register_episode(uid);
+            }
+        }
+        if (_use_entity_pls) {
+            std::vector<EntityPluginPtr>::iterator entity_it;
+            for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
+                (*entity_it)->register_episode(uid);
+            }
+        }
+    }
+
+    void PluginsManager::unregister_episode(uint32_t uid) {
+        if (_use_emotion_pl) _emotion_pl->unregister_episode(uid);
+        if (_use_location_pl) _location_pl->unregister_episode(uid);
+        if (_use_stream_pls) {
+            std::vector<StreamPluginPtr>::iterator stream_it;
+            for (stream_it = _stream_pls.begin(); stream_it != _stream_pls.end(); ++stream_it) {
+                (*stream_it)->unregister_episode(uid);
+            }
+        }
+        if (_use_entity_pls) {
+            std::vector<EntityPluginPtr>::iterator entity_it;
+            for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
+                (*entity_it)->unregister_episode(uid);
+            }
+        }
+    }
+
+    void PluginsManager::collect_emotion(uint32_t uid, ltm::EmotionalRelevance &msg) {
+        if (_use_emotion_pl) _emotion_pl->collect(uid, msg);
+    }
+
+    void PluginsManager::collect_location(uint32_t uid, ltm::Where &msg) {
+        if (_use_location_pl) _location_pl->collect(uid, msg);
+    }
+
+    void PluginsManager::collect_streams(uint32_t uid, ltm::What &msg) {
+        if (_use_stream_pls) {
+            std::vector<StreamPluginPtr>::iterator stream_it;
+            for (stream_it = _stream_pls.begin(); stream_it != _stream_pls.end(); ++stream_it) {
+                (*stream_it)->collect(uid, msg);
+            }
+        }
+    }
+
+    void PluginsManager::collect_entities(uint32_t uid, ltm::What &msg) {
+        if (_use_entity_pls) {
+            std::vector<EntityPluginPtr>::iterator entity_it;
+            for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
+                (*entity_it)->collect(uid, msg);
+            }
+        }
+    }
 }
