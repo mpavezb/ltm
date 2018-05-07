@@ -1,0 +1,38 @@
+# Default server configuration file
+#
+# No plugin is loaded!
+
+
+# Server parameters
+db:          "ltm_db"
+collection:  "episodes"
+host:        "localhost"
+port:         27017
+timeout:      60.0
+
+
+# LTM plugins and parameters.
+# Each plugin must define the pluginlib class and its parameters
+plugins:
+
+  # Emotion Engine plugin
+  emotion:
+    # Class to load through pluginlib
+    class: ""
+
+  # Robot location plugin
+  location:
+    # Class to load through pluginlib
+    class: ""
+
+  # Stream plugins
+  streams:
+    # List of names to consider. 
+    # For each name, you must declare its class and ROS parameters.
+    include: []
+
+  # Entity plugins
+  entities:
+    # List of names to consider. 
+    # For each name, you must declare its class and ROS parameters.
+    include: []

@@ -1,19 +1,11 @@
 <launch>
 
-    <!-- db connection parameters -->
-    <arg name="db"         default="ltm_db"   />
-    <arg name="collection" default="episodes" />
-    <arg name="host"       default="localhost"/>
-    <arg name="port"       default="27017"    />
-    <arg name="timeout"    default="60.0"     />
+    <!-- Default parameters -->
+    <arg name="config_file" default="$(find ltm)/config/server.yaml" />
 
     <!-- LTM server node -->
-    <node name="ltm" type="ltm_server" pkg="ltm" ns="robot">
-        <param name="db"         type="str"    value="$(arg db)"        />
-        <param name="collection" type="str"    value="$(arg collection)"/>
-        <param name="host"       type="str"    value="$(arg host)"      />
-        <param name="port"       type="int"    value="$(arg port)"      />
-        <param name="timeout"    type="double" value="$(arg timeout)"   />
+    <node name="ltm" type="ltm_server" pkg="ltm">
+        <rosparam command="load" file="$(arg config_file)" />
     </node>
 
 </launch>

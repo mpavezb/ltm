@@ -5,6 +5,7 @@
 #include <cstdio> // for EOF
 #include <string>
 #include <sstream>
+#include <vector>
 
 // ROS
 #include <ros/ros.h>
@@ -31,6 +32,8 @@ namespace ltm {
         bool getParameter(std::string key, double &parameter, double default_value);
 
         bool getParameter(std::string key, std::string &parameter, std::string default_value);
+
+        bool getParameter(std::string key, std::vector<std::string> &parameter, std::vector<std::string> default_value);
     };
 
     inline ParameterServerWrapper::ParameterServerWrapper(std::string name) {
@@ -129,6 +132,28 @@ namespace ltm {
 
             parameter = default_value;
             ROS_WARN_STREAM(prefix << "using default '" << key << "': '" << parameter << "'");
+            ret_val = false;
+        }
+        priv.setParam(key, parameter);
+        return ret_val;
+    }
+
+    inline bool
+    ParameterServerWrapper::getParameter(std::string key, std::vector<std::string> &parameter,
+                                         std::vector<std::string> default_value) {
+
+        bool ret_val;
+        if (priv.getParam(key, parameter)) {
+
+            ROS_INFO_STREAM(
+                    " - using custom string list for '" << key << "' which has (" << parameter.size() << ") points");
+            ret_val = true;
+
+        } else {
+
+            parameter = default_value;
+            ROS_WARN_STREAM(
+                    " - using default string list for '" << key << "' which has (" << parameter.size() << ") points");
             ret_val = false;
         }
         priv.setParam(key, parameter);
