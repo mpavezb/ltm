@@ -80,7 +80,7 @@ namespace ltm {
 
         // initialize
         try {
-            _emotion_pl->initialize(10.0);
+            _emotion_pl->initialize("plugins/emotion/");
         } catch (...) {
             ROS_WARN_STREAM("Couldn't initialize the LTM emotion plugin of class <" << plugin_class << ">.");
             return;
@@ -142,7 +142,7 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize(10.0);
+                pl_ptr->initialize(10);
             } catch (...) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Stream plugin of name (" << *it << ") and class <" << plugin_class
