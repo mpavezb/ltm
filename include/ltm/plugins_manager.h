@@ -35,6 +35,9 @@ namespace ltm {
         bool _use_stream_pls;
         bool _use_entity_pls;
 
+        // data
+        std::vector<uint32_t> registry;
+
         void load_emotion_plugin(std::string plugin_class);
         void load_location_plugin(std::string plugin_class);
         void load_stream_plugins(const std::vector<std::string> &plugin_classes);

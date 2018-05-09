@@ -116,7 +116,7 @@ class Manager(object):
 
         # Wait for ROS services
         rospy.loginfo("[LTM]: ... waiting LTM services.")
-        # self.add_episode_client.wait_for_service()
+        self.add_episode_client.wait_for_service()
         self.register_episode_client.wait_for_service()
         rospy.loginfo("[LTM]: ... LTM server is up and running.")
 
@@ -247,6 +247,21 @@ class Manager(object):
         # parent is not registered: recursion
         return self.update_branch_uids_rec(parent, child_id, child_label)
 
+    def save_episode(self, episode, label):
+        rospy.loginfo("[LTM]: sending episode [" + label + "](" + str(episode.uid) + ") to the LTM server.")
+        try:
+            req = AddEpisodeRequest()
+            req.episode = episode
+            req.gather_where = True
+            req.gather_emotions = True
+            req.gather_streams = True
+            req.gather_entities = True
+            req.replace = False
+            self.add_episode_client(req)
+        except rospy.ServiceException:
+            rospy.logwarn("[LTM]: service exception. Couldn't save episode [" + label + "]("
+                          + str(episode.uid) + ") into the LTM server.")
+
     def cb_leaf_start(self, state):
         # TODO: try/except for ROS stuff.
         # get a uid
@@ -285,7 +300,7 @@ class Manager(object):
         episode.when.end = rospy.Time.now()
 
         # send episode to server
-        rospy.loginfo("[LTM]: sending episode (" + str(uid) + ") to LTM server.")
+        self.save_episode(episode, state.ltm.label)
 
         # remove traces
         state.ltm.clear()
@@ -333,7 +348,7 @@ class Manager(object):
                           + ") does not register any children. Considering this episode as a LEAF.")
 
         # send episode to server
-        rospy.logwarn("[LTM]: - NODE [" + state.ltm.label + "](" + str(uid) + "): sending episode to LTM server.")
+        self.save_episode(episode, state.ltm.label)
 
         # remove traces
         state.ltm.clear()

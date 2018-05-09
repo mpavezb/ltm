@@ -104,8 +104,9 @@ namespace ltm {
         }
         _db->insert(req.episode);
 
-        // unregister parent
+        // unregister episode and parent (if it is still registered)
         if (req.episode.type == ltm::Episode::LEAF) _pl->unregister_episode(req.episode.parent_id);
+        _pl->unregister_episode(req.episode.uid);
 
         // finish
         ROS_INFO_STREAM_COND(replace, "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");

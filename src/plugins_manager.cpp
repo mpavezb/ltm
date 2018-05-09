@@ -1,5 +1,6 @@
 #include <ltm/plugins_manager.h>
 #include <ltm/parameter_server_wrapper.h>
+#include <algorithm>
 
 namespace ltm {
 
@@ -204,6 +205,17 @@ namespace ltm {
     }
 
     void PluginsManager::register_episode(uint32_t uid) {
+        // register in cache
+        std::vector<uint32_t>::const_iterator it = std::find(registry.begin(), registry.end(), uid);
+        if (it != registry.end()) {
+            // episode has already been registered
+            ROS_WARN_STREAM("LTM plugin manager: Attempted to register an uid already existing in the cache: " << uid);
+            return;
+        }
+        registry.push_back(uid);
+        ROS_DEBUG_STREAM("LTM plugin manager: registering episode: " << uid);
+
+        // register on plugins
         if (_use_emotion_pl) _emotion_pl->register_episode(uid);
         if (_use_location_pl) _location_pl->register_episode(uid);
         if (_use_stream_pls) {
@@ -221,6 +233,16 @@ namespace ltm {
     }
 
     void PluginsManager::unregister_episode(uint32_t uid) {
+        // unregister from cache
+        std::vector<uint32_t>::iterator it = std::find(registry.begin(), registry.end(), uid);
+        if (it == registry.end()) {
+            // episode has already been unregistered
+            return;
+        }
+        registry.erase(it);
+        ROS_DEBUG_STREAM("LTM plugin manager: unregistering episode: " << uid);
+
+        // unregister on plugins
         if (_use_emotion_pl) _emotion_pl->unregister_episode(uid);
         if (_use_location_pl) _location_pl->unregister_episode(uid);
         if (_use_stream_pls) {
