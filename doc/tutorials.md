@@ -43,7 +43,7 @@ rosrun ltm_samples download_images.bash
 
 ## Testing
 
-### Launching the LTM server
+### Launching the LTM server without plugins
 
 ```bash
 # launch LTM server.
@@ -57,6 +57,22 @@ rostopic list | grep ltm/
 rosservice list | grep ltm/
 rosparam list | grep ltm/
 ```
+
+### Launching the LTM server with the ltm_samples plugins
+
+```bash
+# launch LTM server.
+roslaunch ltm_samples server.launch --screen
+
+# (use this to display debug information)
+rosconsole set /robot/ltm ros.ltm debug && rosconsole set /robot/ltm ros.ltm_samples debug
+
+# Show the ROS API:
+rostopic list | grep ltm/
+rosservice list | grep ltm/
+rosparam list | grep ltm/
+```
+
 
 ### Running the LTM server and adding some episodes from JSON files
 
