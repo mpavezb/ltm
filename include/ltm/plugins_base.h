@@ -48,6 +48,12 @@ namespace ltm {
 
             virtual void collect(uint32_t uid, ltm::What &msg) = 0;
 
+            virtual void degrade(uint32_t uid) = 0;
+
+            virtual std::string get_type() = 0;
+
+            virtual std::string get_collection_name() = 0;
+
             virtual ~StreamBase() {}
 
         protected:

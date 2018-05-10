@@ -538,6 +538,7 @@ namespace ltm {
     }
 
     bool Manager::drop_db() {
+        // TODO: drop other DBs
         _conn.dropDatabase(_db_name);
         setup();
         return true;
