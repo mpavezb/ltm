@@ -142,7 +142,7 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize("plugin/streams/" + *it + "/");
+                pl_ptr->initialize("plugins/streams/" + *it + "/");
             } catch (...) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Stream plugin of name (" << *it << ") and class <" << plugin_class
@@ -186,7 +186,7 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize("plugin/entities/" + *it + "/");
+                pl_ptr->initialize("plugins/entities/" + *it + "/");
             } catch (...) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Entity plugin of name (" << *it << ") and class <" << plugin_class
