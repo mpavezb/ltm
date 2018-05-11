@@ -101,6 +101,7 @@ namespace ltm {
         int reserve_uid();
         int count();
         bool has(int uid);
+        bool is_reserved(int uid);
         bool update_tree(int uid);
         bool drop_db();
     };

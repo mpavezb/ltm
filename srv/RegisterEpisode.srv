@@ -1,2 +1,23 @@
+
+# Each of these fields triggers the related
+# plugin in order to gather episodic information
+bool gather_location  # 'true' : Use location plugin to gather location information.
+                      # 'false': location information will be copied from the added episode.
+                      # PD: if the plugin is not available, the 'false' setting will be used.
+
+bool gather_emotion   # 'true' : Use emotion plugin to gather location information.
+                      # 'false': location information will be copied from the added episode.
+                      # PD: if the plugin is not available, the 'false' setting will be used.
+
+bool gather_streams   # 'true' : Use all available stream plugins to gather information.
+                      # 'false': No stream plugins will run for this episode.
+
+bool gather_entities  # 'true' : Use all available entity plugins to gather information.
+                      # 'false': No stream plugins will run for this episode.
+
+# Use random UID or fixed one.
+bool generate_uid  # Whether to generate a random UID for the episode or not.
+uint32 uid         # This field is used instead of the automatic default uid.
+bool replace       # replace episode if it already exists (same uid).
 ---
 uint32 uid

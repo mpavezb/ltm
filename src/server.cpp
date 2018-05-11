@@ -61,11 +61,33 @@ namespace ltm {
     }
 
     bool Server::register_episode_service(ltm::RegisterEpisode::Request &req, ltm::RegisterEpisode::Response &res) {
-        int value = _db->reserve_uid();
+        int value;
+        if (req.generate_uid) {
+            value = _db->reserve_uid();
+            ROS_DEBUG_STREAM("[REGISTER] Reserving random uid: " << value);
+        } else {
+            value = req.uid;
+            ROS_DEBUG_STREAM("[REGISTER] Reserving fixed uid: " << value);
+            if (_db->is_reserved(value)) {
+                if (req.replace) {
+                    ROS_INFO_STREAM("[REGISTER] Removing episode (" << value << ") for replacement.");
+                    _db->remove(value);
+                    _pl->unregister_episode(value);
+                } else {
+                    ROS_WARN_STREAM("[REGISTER] Attempted to register a fixed uid (" << value << "), but it is already registered.");
+                    return false;
+                }
+            }
+        }
         res.uid = (uint32_t) value;
-        ROS_DEBUG_STREAM("[REGISTER] Reserving random uid: " << value);
+
         if (value >= 0) {
-            _pl->register_episode(res.uid);
+            ltm::EpisodeRegister reg;
+            reg.gather_emotion = req.gather_emotion;
+            reg.gather_location = req.gather_location;
+            reg.gather_streams = req.gather_streams;
+            reg.gather_entities = req.gather_entities;
+            _pl->register_episode(res.uid, reg);
         }
         return (value >= 0);
     }
@@ -87,16 +109,14 @@ namespace ltm {
         bool replace = false;
 
         // collect information
-        if (req.gather_emotions) _pl->collect_emotion(req.episode.uid, req.episode.relevance.emotional);
-        if (req.gather_where)    _pl->collect_location(req.episode.uid, req.episode.where);
-        if (req.gather_streams)  _pl->collect_streams(req.episode.uid, req.episode.what);
-        if (req.gather_entities) _pl->collect_entities(req.episode.uid, req.episode.what);
+        _pl->collect(req.episode.uid, req.episode);
 
         // insert episode
         if (_db->has(req.episode.uid)) {
             if (!req.replace) {
                 ROS_ERROR_STREAM("ADD: Episode with uid '" << req.episode.uid << "' already exists.");
                 res.succeeded = (uint8_t) false;
+                // FIXME: no retornar. desuscribir
                 return true;
             }
             replace = true;
@@ -106,8 +126,7 @@ namespace ltm {
 
         // unregister episode and parent (if it is still registered)
         if (req.episode.type == ltm::Episode::LEAF) _pl->unregister_episode(req.episode.parent_id);
-        _pl->unregister_episode(req.episode.uid);
-
+        
         // finish
         ROS_INFO_STREAM_COND(replace, "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
         ROS_INFO_STREAM_COND(!replace, "ADD: New episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");

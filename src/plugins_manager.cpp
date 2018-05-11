@@ -204,59 +204,60 @@ namespace ltm {
         _use_entity_pls = !_entity_pls.empty();
     }
 
-    void PluginsManager::register_episode(uint32_t uid) {
+    void PluginsManager::register_episode(uint32_t uid, ltm::EpisodeRegister& reg) {
         // register in cache
-        std::vector<uint32_t>::const_iterator it = std::find(registry.begin(), registry.end(), uid);
+        std::map<uint32_t, ltm::EpisodeRegister>::const_iterator it = registry.find(uid);
         if (it != registry.end()) {
             // episode has already been registered
             ROS_WARN_STREAM("LTM plugin manager: Attempted to register an uid already existing in the cache: " << uid);
             return;
         }
-        registry.push_back(uid);
         ROS_DEBUG_STREAM("LTM plugin manager: registering episode: " << uid);
 
         // register on plugins
-        if (_use_emotion_pl) _emotion_pl->register_episode(uid);
-        if (_use_location_pl) _location_pl->register_episode(uid);
-        if (_use_stream_pls) {
+        if (_use_emotion_pl && reg.gather_emotion) _emotion_pl->register_episode(uid);
+        if (_use_location_pl && reg.gather_location) _location_pl->register_episode(uid);
+        if (_use_stream_pls && reg.gather_streams) {
             std::vector<StreamPluginPtr>::iterator stream_it;
             for (stream_it = _stream_pls.begin(); stream_it != _stream_pls.end(); ++stream_it) {
                 (*stream_it)->register_episode(uid);
             }
         }
-        if (_use_entity_pls) {
+        if (_use_entity_pls && reg.gather_entities) {
             std::vector<EntityPluginPtr>::iterator entity_it;
             for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
                 (*entity_it)->register_episode(uid);
             }
         }
+        registry[uid] = reg;
     }
 
     void PluginsManager::unregister_episode(uint32_t uid) {
         // unregister from cache
-        std::vector<uint32_t>::iterator it = std::find(registry.begin(), registry.end(), uid);
+        std::map<uint32_t, ltm::EpisodeRegister>::const_iterator it = registry.find(uid);
         if (it == registry.end()) {
             // episode has already been unregistered
             return;
         }
-        registry.erase(it);
         ROS_DEBUG_STREAM("LTM plugin manager: unregistering episode: " << uid);
 
         // unregister on plugins
-        if (_use_emotion_pl) _emotion_pl->unregister_episode(uid);
-        if (_use_location_pl) _location_pl->unregister_episode(uid);
-        if (_use_stream_pls) {
+        EpisodeRegister reg = registry[uid];
+        if (_use_emotion_pl && reg.gather_emotion) _emotion_pl->unregister_episode(uid);
+        if (_use_location_pl && reg.gather_location) _location_pl->unregister_episode(uid);
+        if (_use_stream_pls && reg.gather_streams) {
             std::vector<StreamPluginPtr>::iterator stream_it;
             for (stream_it = _stream_pls.begin(); stream_it != _stream_pls.end(); ++stream_it) {
                 (*stream_it)->unregister_episode(uid);
             }
         }
-        if (_use_entity_pls) {
+        if (_use_entity_pls && reg.gather_entities) {
             std::vector<EntityPluginPtr>::iterator entity_it;
             for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
                 (*entity_it)->unregister_episode(uid);
             }
         }
+        registry.erase(uid);
     }
 
     void PluginsManager::collect_emotion(uint32_t uid, ltm::EmotionalRelevance &msg) {
@@ -283,5 +284,14 @@ namespace ltm {
                 (*entity_it)->collect(uid, msg);
             }
         }
+    }
+
+    void PluginsManager::collect(uint32_t uid, ltm::Episode &episode) {
+        EpisodeRegister reg = registry[uid];
+        if (reg.gather_emotion)  collect_emotion(uid, episode.relevance.emotional);
+        if (reg.gather_location) collect_location(uid, episode.where);
+        if (reg.gather_streams)  collect_streams(uid, episode.what);
+        if (reg.gather_entities) collect_entities(uid, episode.what);
+        unregister_episode(uid);
     }
 }

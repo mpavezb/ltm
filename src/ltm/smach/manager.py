@@ -252,10 +252,6 @@ class Manager(object):
         try:
             req = AddEpisodeRequest()
             req.episode = episode
-            req.gather_where = True
-            req.gather_emotions = True
-            req.gather_streams = True
-            req.gather_entities = True
             req.replace = False
             self.add_episode_client(req)
         except rospy.ServiceException:
@@ -266,7 +262,15 @@ class Manager(object):
         # TODO: try/except for ROS stuff.
         # get a uid
         try:
-            res = self.register_episode_client()
+            req = RegisterEpisodeRequest()
+            req.gather_emotion = True
+            req.gather_location = True
+            req.gather_streams = True
+            req.gather_entities = True
+            req.replace = False
+            req.generate_uid = True
+            req.uid = 0
+            res = self.register_episode_client(req)
         except rospy.ServiceException:
             rospy.logwarn("[LTM]: There aren't any available uids. DB is full. This state will not be recorded.")
             return
@@ -309,7 +313,15 @@ class Manager(object):
     def cb_node_start(self, state):
         # get a uid
         try:
-            res = self.register_episode_client()
+            req = RegisterEpisodeRequest()
+            req.gather_emotion = True
+            req.gather_location = True
+            req.gather_streams = True
+            req.gather_entities = True
+            req.replace = False
+            req.generate_uid = True
+            req.uid = 0
+            res = self.register_episode_client(req)
         except rospy.ServiceException:
             rospy.logwarn("[LTM]: There aren't any available uids. DB is full. This state will not be recorded.")
             return

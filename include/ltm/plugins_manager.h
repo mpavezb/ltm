@@ -12,6 +12,20 @@ typedef boost::shared_ptr<ltm::plugin::EntityBase> EntityPluginPtr;
 
 namespace ltm {
 
+    struct EpisodeRegister {
+        bool gather_emotion;
+        bool gather_location;
+        bool gather_streams;
+        bool gather_entities;
+
+        EpisodeRegister() {
+            gather_emotion = false;
+            gather_location = false;
+            gather_streams = false;
+            gather_entities = false;
+        }
+    };
+
     class PluginsManager {
     private:
         // TODO: manejar cache de episodios ya desregistrados! (a pesar de que no existan!)
@@ -36,22 +50,24 @@ namespace ltm {
         bool _use_entity_pls;
 
         // data
-        std::vector<uint32_t> registry;
+        std::map<uint32_t, ltm::EpisodeRegister> registry;
 
         void load_emotion_plugin(std::string plugin_class);
         void load_location_plugin(std::string plugin_class);
         void load_stream_plugins(const std::vector<std::string> &plugin_classes);
         void load_entity_plugins(const std::vector<std::string> &plugin_classes);
 
-    public:
-        PluginsManager();
-        void setup();
-        void register_episode(uint32_t uid);
-        void unregister_episode(uint32_t uid);
         void collect_emotion(uint32_t uid, ltm::EmotionalRelevance &msg);
         void collect_location(uint32_t uid, ltm::Where &msg);
         void collect_streams(uint32_t uid, ltm::What &msg);
         void collect_entities(uint32_t uid, ltm::What &msg);
+
+    public:
+        PluginsManager();
+        void setup();
+        void register_episode(uint32_t uid, ltm::EpisodeRegister& reg);
+        void unregister_episode(uint32_t uid);
+        void collect(uint32_t uid, ltm::Episode& episode);
 
         virtual ~PluginsManager();
     };

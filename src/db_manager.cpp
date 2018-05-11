@@ -21,7 +21,7 @@ namespace ltm {
         // reserved uids are cleared on startup
         _reserved_uids.clear();
         _db_uids.clear();
-        std::srand(time(NULL));
+        std::srand((uint)time(NULL));
     }
 
     Manager::~Manager() {}
@@ -459,6 +459,17 @@ namespace ltm {
     }
 
     bool Manager::remove(int uid) {
+        std::set<int>::iterator it;
+
+        // value is already reserved
+        it = _reserved_uids.find(uid);
+        if (it != _reserved_uids.end()) _reserved_uids.erase(it);
+
+        // value is in db cache
+        it = _db_uids.find(uid);
+        if (it != _db_uids.end()) _db_uids.erase(it);
+
+        // remove from DB
         QueryPtr query = _coll->createQuery();
         query->append("uid", uid);
         _coll->removeMessages(query);
@@ -517,7 +528,24 @@ namespace ltm {
         return value;
     }
 
+    bool Manager::is_reserved(int uid) {
+        std::set<int>::iterator it;
+
+        // value is already reserved
+        it = _reserved_uids.find(uid);
+        if (it != _reserved_uids.end()) return true;
+
+        // value is in db cache
+        it = _db_uids.find(uid);
+        if (it != _db_uids.end()) return true;
+
+        // value is already in DB
+        if (has(uid)) return true;
+        return false;
+    }
+
     bool Manager::has(int uid) {
+        // TODO: doc, no revisa por uids ya registradas
         QueryPtr query = _coll->createQuery();
         query->append("uid", uid);
         try {

@@ -25,6 +25,7 @@ class LoaderNode(object):
 
         # ROS clients
         rospy.loginfo("Waiting for LTM server to be up.")
+        self.register_episode_client = rospy.ServiceProxy('ltm/register_episode', RegisterEpisode)
         self.add_episode_client = rospy.ServiceProxy('ltm/add_episode', AddEpisode)
         self.update_tree_client = rospy.ServiceProxy('ltm/update_tree', UpdateTree)
 
@@ -49,13 +50,21 @@ class LoaderNode(object):
 
     def save(self, episode):
         try:
+            # register episode
+            reg_req = RegisterEpisodeRequest()
+            reg_req.gather_emotion = False
+            reg_req.gather_location = False
+            reg_req.gather_streams = False
+            reg_req.gather_entities = False
+            reg_req.replace = True
+            reg_req.generate_uid = False
+            reg_req.uid = episode.uid
+            self.register_episode_client(reg_req)
+
+            # add episode
             req = AddEpisodeRequest()
             req.episode = episode
             req.replace = True
-            req.gather_emotions = False
-            req.gather_entities = False
-            req.gather_streams = False
-            req.gather_where = False
             res = self.add_episode_client(req)
             if res.succeeded:
                 self.saved_episodes.append(episode.uid)
