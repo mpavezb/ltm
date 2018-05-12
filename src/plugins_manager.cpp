@@ -193,7 +193,7 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize("plugins/entities/" + *it + "/");
+                pl_ptr->initialize("plugins/entities/" + *it + "/", _conn, _db_name);
             } catch (...) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Entity plugin of name (" << *it << ") and class <" << plugin_class
@@ -289,7 +289,7 @@ namespace ltm {
         if (_use_entity_pls) {
             std::vector<EntityPluginPtr>::iterator entity_it;
             for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
-                (*entity_it)->collect(uid, msg);
+                (*entity_it)->collect(uid, msg, start, end);
             }
         }
     }
