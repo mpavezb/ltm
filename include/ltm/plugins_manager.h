@@ -4,6 +4,7 @@
 #include <pluginlib/class_loader.h>
 #include <ltm/plugins_base.h>
 #include <ltm/Episode.h>
+#include <ltm/db_manager.h>
 
 typedef boost::shared_ptr<ltm::plugin::EmotionBase> EmotionPluginPtr;
 typedef boost::shared_ptr<ltm::plugin::LocationBase> LocationPluginPtr;
@@ -17,12 +18,15 @@ namespace ltm {
         bool gather_location;
         bool gather_streams;
         bool gather_entities;
+        ros::Time start;
+        ros::Time end;
 
         EpisodeRegister() {
             gather_emotion = false;
             gather_location = false;
             gather_streams = false;
             gather_entities = false;
+            start = ros::Time::now();
         }
     };
 
@@ -51,6 +55,8 @@ namespace ltm {
 
         // data
         std::map<uint32_t, ltm::EpisodeRegister> registry;
+        DBConnectionPtr _conn;
+        std::string _db_name;
 
         void load_emotion_plugin(std::string plugin_class);
         void load_location_plugin(std::string plugin_class);
@@ -59,12 +65,12 @@ namespace ltm {
 
         void collect_emotion(uint32_t uid, ltm::EmotionalRelevance &msg);
         void collect_location(uint32_t uid, ltm::Where &msg);
-        void collect_streams(uint32_t uid, ltm::What &msg);
-        void collect_entities(uint32_t uid, ltm::What &msg);
+        void collect_streams(uint32_t uid, ltm::What &msg, ros::Time start, ros::Time end);
+        void collect_entities(uint32_t uid, ltm::What &msg, ros::Time start, ros::Time end);
 
     public:
         PluginsManager();
-        void setup();
+        void setup(DBConnectionPtr ptr, std::string db_name);
         void register_episode(uint32_t uid, ltm::EpisodeRegister& reg);
         void unregister_episode(uint32_t uid);
         void collect(uint32_t uid, ltm::Episode& episode);

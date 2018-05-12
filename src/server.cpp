@@ -9,6 +9,7 @@ namespace ltm {
 
     Server::Server() {
         ros::NodeHandle priv("~");
+        _log_prefix = "[LTM]: ";
 
         ParameterServerWrapper psw;
         psw.getParameter("db", _db_name, "ltm_db");
@@ -23,7 +24,7 @@ namespace ltm {
 
         // Plugins manager
         _pl.reset(new PluginsManager());
-        _pl->setup();
+        _pl->setup(_db->_conn, _db_name);
 
         // Announce services
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
@@ -33,14 +34,14 @@ namespace ltm {
         _status_service = priv.advertiseService("status", &Server::status_service, this);
         _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
 
-        ROS_INFO("LTM server is up and running.");
+        ROS_INFO_STREAM(_log_prefix << "Server is up and running.");
         show_status();
     }
 
     Server::~Server() {}
 
     void Server::show_status() {
-        ROS_INFO_STREAM("DB has " << _db->count() << " entries.");
+        ROS_INFO_STREAM(_log_prefix << "DB has " << _db->count() << " entries.");
     }
 
     // ==========================================================
@@ -48,10 +49,10 @@ namespace ltm {
     // ==========================================================
 
     bool Server::get_episode_service(ltm::GetEpisode::Request &req, ltm::GetEpisode::Response &res) {
-        ROS_INFO_STREAM("GET: Retrieving episode with uid: " << req.uid);
+        ROS_INFO_STREAM(_log_prefix << "GET: Retrieving episode with uid: " << req.uid);
         EpisodeWithMetadataPtr ep_ptr;
         if (!_db->get(req.uid, ep_ptr)) {
-            ROS_ERROR_STREAM("GET: Episode with uid '" << req.uid << "' not found.");
+            ROS_ERROR_STREAM(_log_prefix << "GET: Episode with uid '" << req.uid << "' not found.");
             res.succeeded = (uint8_t) false;
             return true;
         }
@@ -64,17 +65,17 @@ namespace ltm {
         int value;
         if (req.generate_uid) {
             value = _db->reserve_uid();
-            ROS_DEBUG_STREAM("[REGISTER] Reserving random uid: " << value);
+            ROS_DEBUG_STREAM(_log_prefix << "[REGISTER] Reserving random uid: " << value);
         } else {
             value = req.uid;
-            ROS_DEBUG_STREAM("[REGISTER] Reserving fixed uid: " << value);
+            ROS_DEBUG_STREAM(_log_prefix << "[REGISTER] Reserving fixed uid: " << value);
             if (_db->is_reserved(value)) {
                 if (req.replace) {
-                    ROS_INFO_STREAM("[REGISTER] Removing episode (" << value << ") for replacement.");
+                    ROS_INFO_STREAM(_log_prefix << "[REGISTER] Removing episode (" << value << ") for replacement.");
                     _db->remove(value);
                     _pl->unregister_episode(value);
                 } else {
-                    ROS_WARN_STREAM("[REGISTER] Attempted to register a fixed uid (" << value << "), but it is already registered.");
+                    ROS_WARN_STREAM(_log_prefix << "[REGISTER] Attempted to register a fixed uid (" << value << "), but it is already registered.");
                     return false;
                 }
             }
@@ -93,12 +94,12 @@ namespace ltm {
     }
 
     bool Server::update_tree_service(ltm::UpdateTree::Request &req, ltm::UpdateTree::Response &res) {
-        ROS_INFO_STREAM("Updating episode structure for uid: " << req.uid);
+        ROS_INFO_STREAM(_log_prefix << "Updating episode structure for uid: " << req.uid);
         // reportar problemas!
         // TODO: missing child
         // TODO: missing root
         if (!_db->update_tree(req.uid)) {
-            ROS_ERROR_STREAM("A problem occurred while trying to update the tree for uid: " << req.uid);
+            ROS_ERROR_STREAM(_log_prefix << "A problem occurred while trying to update the tree for uid: " << req.uid);
             res.succeeded = (uint8_t) false;
         }
         res.succeeded = (uint8_t) true;
@@ -108,13 +109,15 @@ namespace ltm {
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
         bool replace = false;
 
-        // collect information
-        _pl->collect(req.episode.uid, req.episode);
+        // only collect information for LEAFs
+        if (req.episode.type == ltm::Episode::LEAF) {
+            _pl->collect(req.episode.uid, req.episode);
+        }
 
         // insert episode
         if (_db->has(req.episode.uid)) {
             if (!req.replace) {
-                ROS_ERROR_STREAM("ADD: Episode with uid '" << req.episode.uid << "' already exists.");
+                ROS_ERROR_STREAM(_log_prefix << "ADD: Episode with uid '" << req.episode.uid << "' already exists.");
                 res.succeeded = (uint8_t) false;
                 // FIXME: no retornar. desuscribir
                 return true;
@@ -124,12 +127,12 @@ namespace ltm {
         }
         _db->insert(req.episode);
 
-        // unregister episode and parent (if it is still registered)
-        if (req.episode.type == ltm::Episode::LEAF) _pl->unregister_episode(req.episode.parent_id);
+        // unregister parent (if it is still registered)
+        _pl->unregister_episode(req.episode.parent_id);
         
         // finish
-        ROS_INFO_STREAM_COND(replace, "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
-        ROS_INFO_STREAM_COND(!replace, "ADD: New episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
+        ROS_INFO_STREAM_COND(replace, _log_prefix << "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
+        ROS_INFO_STREAM_COND(!replace, _log_prefix << "ADD: New episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
         res.succeeded = (uint8_t) true;
         return true;
     }
@@ -142,7 +145,7 @@ namespace ltm {
     bool Server::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
         // TODO: this requires a synchronization mechanism
         // TODO: the connection should be closed first?
-        ROS_INFO("DELETE: Dropping DB");
+        ROS_WARN_STREAM(_log_prefix << "DELETE: Deleting all entries from collection '" << _db_collection_name << "'");
         _db->drop_db();
         show_status();
         return true;

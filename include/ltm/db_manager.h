@@ -20,9 +20,14 @@ typedef warehouse_ros_mongo::Query::Ptr QueryPtr;
 typedef warehouse_ros::Metadata Metadata;
 typedef warehouse_ros::Metadata::Ptr MetadataPtr;
 
+
+typedef boost::shared_ptr<warehouse_ros_mongo::MongoDatabaseConnection> DBConnectionPtr;
+
 namespace ltm {
 
     class Manager {
+    public:
+        DBConnectionPtr _conn;
     private:
         // db params
         std::string _db_name;
@@ -32,7 +37,6 @@ namespace ltm {
         float _db_timeout;
 
         // db handlers
-        warehouse_ros_mongo::MongoDatabaseConnection _conn;
         EpisodeCollectionPtr _coll;
 
         // reserved uid

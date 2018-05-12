@@ -413,9 +413,10 @@ namespace ltm {
         // setup DB
         try {
             // host, port, timeout
-            _conn.setParams(_db_host, _db_port, _db_timeout);
-            _conn.connect();
-            _coll = _conn.openCollectionPtr<Episode>(_db_name, _db_collection_name);
+            _conn.reset(new warehouse_ros_mongo::MongoDatabaseConnection());
+            _conn->setParams(_db_host, _db_port, _db_timeout);
+            _conn->connect();
+            _coll = _conn->openCollectionPtr<Episode>(_db_name, _db_collection_name);
         }
         catch (const warehouse_ros::DbConnectException& exception) {
             // Connection timeout
@@ -424,7 +425,7 @@ namespace ltm {
             exit(1);
         }
         // Check for empty database
-        if (!_conn.isConnected() || !_coll) {
+        if (!_conn->isConnected() || !_coll) {
             ROS_ERROR_STREAM("Connection to DB failed for collection '" << _db_collection_name << "'.");
             ros::shutdown();
             exit(1);
@@ -436,7 +437,11 @@ namespace ltm {
     // -----------------------------------------------------------------------------------------------------------------
 
     bool Manager::insert(const ltm::Episode &episode) {
+        // insert into DB
         _coll->insert(episode, make_metadata(episode));
+
+        // insert into cache
+        _db_uids.insert(episode.uid);
         return true;
     }
 
@@ -540,8 +545,7 @@ namespace ltm {
         if (it != _db_uids.end()) return true;
 
         // value is already in DB
-        if (has(uid)) return true;
-        return false;
+        return has(uid);
     }
 
     bool Manager::has(int uid) {
@@ -567,7 +571,9 @@ namespace ltm {
 
     bool Manager::drop_db() {
         // TODO: drop other DBs
-        _conn.dropDatabase(_db_name);
+        _conn->dropDatabase(_db_name);
+        _reserved_uids.clear();
+        _db_uids.clear();
         setup();
         return true;
     }

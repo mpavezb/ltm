@@ -38,7 +38,14 @@ namespace ltm {
         delete _entity_loader;
     }
 
-    void PluginsManager::setup() {
+    void PluginsManager::setup(DBConnectionPtr ptr, std::string db_name) {
+
+        // setup DB
+        _conn = ptr;
+        _db_name = db_name;
+
+
+        // ROS Parameters
         ParameterServerWrapper psw;
 
         // setup emotion plugin
@@ -142,11 +149,11 @@ namespace ltm {
 
             // initialize
             try {
-                pl_ptr->initialize("plugins/streams/" + *it + "/");
-            } catch (...) {
+                pl_ptr->initialize("plugins/streams/" + *it + "/", _conn, _db_name);
+            } catch (std::exception& e) {
                 ROS_WARN_STREAM(
-                        "Couldn't initialize the LTM Stream plugin of name (" << *it << ") and class <" << plugin_class
-                                                                              << ">.");
+                        "Couldn't initialize the LTM Stream plugin of name ("
+                        << *it << ") and class <" << plugin_class << ">. Because: " << e.what());
                 continue;
             }
 
@@ -229,6 +236,7 @@ namespace ltm {
                 (*entity_it)->register_episode(uid);
             }
         }
+        reg.start = ros::Time::now();
         registry[uid] = reg;
     }
 
@@ -268,16 +276,16 @@ namespace ltm {
         if (_use_location_pl) _location_pl->collect(uid, msg);
     }
 
-    void PluginsManager::collect_streams(uint32_t uid, ltm::What &msg) {
+    void PluginsManager::collect_streams(uint32_t uid, ltm::What &msg, ros::Time start, ros::Time end) {
         if (_use_stream_pls) {
             std::vector<StreamPluginPtr>::iterator stream_it;
             for (stream_it = _stream_pls.begin(); stream_it != _stream_pls.end(); ++stream_it) {
-                (*stream_it)->collect(uid, msg);
+                (*stream_it)->collect(uid, msg, start, end);
             }
         }
     }
 
-    void PluginsManager::collect_entities(uint32_t uid, ltm::What &msg) {
+    void PluginsManager::collect_entities(uint32_t uid, ltm::What &msg, ros::Time start, ros::Time end) {
         if (_use_entity_pls) {
             std::vector<EntityPluginPtr>::iterator entity_it;
             for (entity_it = _entity_pls.begin(); entity_it != _entity_pls.end(); ++entity_it) {
@@ -288,10 +296,11 @@ namespace ltm {
 
     void PluginsManager::collect(uint32_t uid, ltm::Episode &episode) {
         EpisodeRegister reg = registry[uid];
+        reg.end = ros::Time::now();
         if (reg.gather_emotion)  collect_emotion(uid, episode.relevance.emotional);
         if (reg.gather_location) collect_location(uid, episode.where);
-        if (reg.gather_streams)  collect_streams(uid, episode.what);
-        if (reg.gather_entities) collect_entities(uid, episode.what);
+        if (reg.gather_streams)  collect_streams(uid, episode.what, reg.start, reg.end);
+        if (reg.gather_entities) collect_entities(uid, episode.what, reg.start, reg.end);
         unregister_episode(uid);
     }
 }

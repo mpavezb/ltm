@@ -33,6 +33,7 @@ namespace ltm {
         std::string _db_host;
         int _db_port;
         float _db_timeout;
+        std::string _log_prefix;
 
         // servers
         ros::ServiceServer _status_service;

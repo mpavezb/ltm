@@ -189,6 +189,7 @@ class Manager(object):
                 self.setup_callbacks(state, cb_leaf_start, cb_leaf_end)
 
     @staticmethod
+
     def register_state(state, tags):
         rospy.loginfo("[LTM]: - registering state (" + str(state.__class__.__name__) + ") with tags: " + str(tags))
         state.ltm = LTMStateData()
