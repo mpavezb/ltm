@@ -19,8 +19,6 @@ find_package(catkin REQUIRED
     pluginlib
 )
 
-catkin_python_setup()
-
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -105,11 +103,6 @@ target_link_libraries(ltm_server ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
-catkin_install_python(
-    PROGRAMS scripts/json_loader
-    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination

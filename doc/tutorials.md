@@ -1,6 +1,7 @@
-# Tutorials: The ltm_samples package
+# LTM Tutorials
 
-In order to keep the codebase clean, all testing code, samples and scripts (and testing dependencies) have been moved to an standalone repository, the [ltm_samples](https://github.com/mpavezb/ltm_samples) ROS package.
+In order to keep the codebase clean, two extra repositories with ROS packages have been created. The 
+[ltm_addons](https://github.com/mpavezb/ltm_addons) package implements SMACH and JSON interfaces to gather episodes, and some generic plugins. The [ltm_samples](https://github.com/mpavezb/ltm_samples) package contains all testing code and samples (and testing dependencies). Both packages will be used on this tutorial.
 
 That package serves as a guide for new users to develop custom LTM plugins, designed for their robotic system needs.
 
@@ -17,8 +18,9 @@ sudo apt-get install ros-kinetic-video-stream-opencv ros-kinetic-image-view
 # python-faker
 pip install faker
 
-# download the ltm_samples package.
+# download the packages.
 roscd && cd ../src
+git clone https://github.com/mpavezb/ltm_addons.git
 git clone https://github.com/mpavezb/ltm_samples.git
 
 # compile.
@@ -58,14 +60,14 @@ rosservice list | grep ltm/
 rosparam list | grep ltm/
 ```
 
-### Launching the LTM server with the ltm_samples plugins
+### Launching the LTM server with the ltm_addons and ltm_samples plugins
 
 ```bash
 # launch LTM server.
 roslaunch ltm_samples server.launch --screen
 
 # (use this to display debug information)
-rosconsole set /robot/ltm ros.ltm debug && rosconsole set /robot/ltm ros.ltm_samples debug
+rosconsole set /robot/ltm ros.ltm debug && rosconsole set /robot/ltm ros.ltm_addons debug && rosconsole set /robot/ltm ros.ltm_samples debug
 
 # Show the ROS API:
 rostopic list | grep ltm/
@@ -114,7 +116,7 @@ rosparam list | grep fake/
 rosrun ltm_samples spr.py
 
 # launch the smach viewer
-# the second command will show the smach_viewer.py node displaying the machine states.
+# the second command will also show the smach_viewer.py node displaying the machine states.
 roslaunch ltm_samples smach_spr.launch --screen
 roslaunch ltm_samples smach_spr.launch viewer:=true --screen
 ```
