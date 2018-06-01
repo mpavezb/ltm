@@ -77,7 +77,7 @@ generate_messages(
 ###################################
 catkin_package(
     INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include include
-    LIBRARIES
+    LIBRARIES ltm_plugins
     CATKIN_DEPENDS roscpp std_srvs std_msgs geometry_msgs sensor_msgs message_runtime warehouse_ros_mongo
     DEPENDS
 )
@@ -93,9 +93,13 @@ include_directories(
 )
 link_directories(${catkin_LINK_DIRS})
 
+add_library(ltm_plugins src/stream_collection.cpp)
+add_dependencies(ltm_plugins ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 add_executable(ltm_server src/server.cpp src/episode_collection.cpp src/geometry.cpp src/plugins_manager.cpp)
 add_dependencies(ltm_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(ltm_server ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(ltm_server ltm_plugins ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
 
 #############
 ## Install ##
