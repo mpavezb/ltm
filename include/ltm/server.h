@@ -16,10 +16,10 @@
 #include <ltm/UpdateTree.h>
 
 // LTM
-#include <ltm/db_manager.h>
+#include <ltm/db/episode_collection.h>
 #include <ltm/plugins_manager.h>
 
-typedef boost::scoped_ptr<ltm::Manager> ManagerPtr;
+typedef boost::scoped_ptr<ltm::db::EpisodeCollectionManager> EpisodeCollectionManagerPtr;
 typedef boost::scoped_ptr<ltm::PluginsManager> PluginsManagerPtr;
 
 namespace ltm {
@@ -44,7 +44,7 @@ namespace ltm {
         ros::ServiceServer _update_tree_service;
 
         // DB
-        ManagerPtr _db;
+        EpisodeCollectionManagerPtr _db;
 
         // Plugins
         PluginsManagerPtr _pl;

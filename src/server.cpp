@@ -19,7 +19,7 @@ namespace ltm {
         psw.getParameter("timeout", _db_timeout, 60.0);
 
         // DB manager
-        _db.reset(new Manager(_db_name, _db_collection_name, _db_host, (uint)_db_port, _db_timeout));
+        _db.reset(new ltm::db::EpisodeCollectionManager(_db_name, _db_collection_name, _db_host, (uint)_db_port, _db_timeout));
         _db->setup();
 
         // Plugins manager

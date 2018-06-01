@@ -2,9 +2,7 @@
 #define LTM_PLUGINS_MANAGER_H
 
 #include <pluginlib/class_loader.h>
-#include <ltm/plugins_base.h>
-#include <ltm/Episode.h>
-#include <ltm/db_manager.h>
+#include <ltm/plugin/plugins_base.h>
 
 typedef boost::shared_ptr<ltm::plugin::EmotionBase> EmotionPluginPtr;
 typedef boost::shared_ptr<ltm::plugin::LocationBase> LocationPluginPtr;
