@@ -17,10 +17,10 @@
 
 // LTM
 #include <ltm/db/episode_collection.h>
-#include <ltm/plugins_manager.h>
+#include <ltm/plugin/plugins_manager.h>
 
 typedef boost::scoped_ptr<ltm::db::EpisodeCollectionManager> EpisodeCollectionManagerPtr;
-typedef boost::scoped_ptr<ltm::PluginsManager> PluginsManagerPtr;
+typedef boost::scoped_ptr<ltm::plugin::PluginsManager> PluginsManagerPtr;
 
 namespace ltm {
 

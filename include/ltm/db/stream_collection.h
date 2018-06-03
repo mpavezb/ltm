@@ -13,7 +13,7 @@
 namespace ltm {
     namespace db {
 
-        template <class StreamType, class StreamSrv>
+        template<class StreamType, class StreamSrv>
         class StreamCollectionManager {
         private:
             ros::ServiceServer _status_service;
@@ -33,7 +33,8 @@ namespace ltm {
             typedef boost::shared_ptr<const StreamWithMetadata> StreamWithMetadataPtr;
 
 
-            StreamCollectionManager(DBConnectionPtr ptr, std::string db_name, std::string collection_name, std::string type, std::string log_prefix) {
+            StreamCollectionManager(DBConnectionPtr ptr, std::string db_name, std::string collection_name,
+                                    std::string type, std::string log_prefix) {
                 _conn = ptr;
                 _db_name = db_name;
                 _collection_name = collection_name;
@@ -58,9 +59,8 @@ namespace ltm {
             std::string _log_prefix;
 
 
-
-
             void subscribe() {}
+
             void unsubscribe() {}
 
             void setup() {
@@ -122,9 +122,10 @@ namespace ltm {
                     // host, port, timeout
                     _coll = _conn->openCollectionPtr<StreamType>(_db_name, _collection_name);
                 }
-                catch (const warehouse_ros::DbConnectException& exception) {
+                catch (const warehouse_ros::DbConnectException &exception) {
                     // Connection timeout
-                    ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection " << _collection_name);
+                    ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection "
+                                                                  << _collection_name);
                 }
                 // Check for empty database
                 if (!_conn->isConnected() || !_coll) {
@@ -143,7 +144,7 @@ namespace ltm {
 
                 // remove from DB
                 QueryPtr query = _coll->createQuery();
-                query->append("uid", (int)uid);
+                query->append("uid", (int) uid);
                 _coll->removeMessages(query);
                 return true;
             }
@@ -155,7 +156,7 @@ namespace ltm {
                 try {
                     _coll->findOne(query, true);
                 }
-                catch (const warehouse_ros::NoMatchingMessageException& exception) {
+                catch (const warehouse_ros::NoMatchingMessageException &exception) {
                     return false;
                 }
                 return true;
@@ -175,11 +176,11 @@ namespace ltm {
 
             bool get(uint32_t uid, StreamWithMetadataPtr &stream_ptr) {
                 QueryPtr query = _coll->createQuery();
-                query->append("uid", (int)uid);
+                query->append("uid", (int) uid);
                 try {
                     stream_ptr = _coll->findOne(query, false);
                 }
-                catch (const warehouse_ros::NoMatchingMessageException& exception) {
+                catch (const warehouse_ros::NoMatchingMessageException &exception) {
                     stream_ptr.reset();
                     return false;
                 }
@@ -209,12 +210,13 @@ namespace ltm {
             // ROS API
             // -----------------------------------------------------------------------------------------------------------------
 
-            bool status_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res) {
-                ROS_INFO_STREAM(_log_prefix << "Collection '" << _collection_name << "' has " << count() << " entries.");
+            bool status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+                ROS_INFO_STREAM(
+                        _log_prefix << "Collection '" << _collection_name << "' has " << count() << " entries.");
                 return true;
             }
 
-            bool drop_db_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res) {
+            bool drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
                 ROS_WARN_STREAM(_log_prefix << "Deleting all entries from collection '" << _collection_name << "'.");
                 std_srvs::Empty srv;
                 drop_db();
@@ -222,12 +224,13 @@ namespace ltm {
                 return true;
             }
 
-            bool add_service(StreamSrvRequest  &req, StreamSrvResponse &res) {
+            bool add_service(StreamSrvRequest &req, StreamSrvResponse &res) {
 
             }
 
-            bool get_service(StreamSrvRequest  &req, StreamSrvResponse &res) {
-                ROS_INFO_STREAM(_log_prefix << "Retrieving stream (" << req.uid << ") from collection '" << get_collection_name() << "'");
+            bool get_service(StreamSrvRequest &req, StreamSrvResponse &res) {
+                ROS_INFO_STREAM(_log_prefix << "Retrieving stream (" << req.uid << ") from collection '"
+                                            << get_collection_name() << "'");
                 StreamWithMetadataPtr stream_ptr;
                 if (!get(req.uid, stream_ptr)) {
                     ROS_ERROR_STREAM(_log_prefix << "Stream with uid '" << req.uid << "' not found.");
@@ -239,8 +242,9 @@ namespace ltm {
                 return true;
             }
 
-            bool delete_service(StreamSrvRequest  &req, StreamSrvResponse &res) {
-                ROS_INFO_STREAM(_log_prefix << "Removing (" << req.uid << ") from collection '" << get_collection_name() << "'");
+            bool delete_service(StreamSrvRequest &req, StreamSrvResponse &res) {
+                ROS_INFO_STREAM(_log_prefix << "Removing (" << req.uid << ") from collection '" << get_collection_name()
+                                            << "'");
                 res.succeeded = (uint8_t) remove(req.uid);
                 return res.succeeded;
             }

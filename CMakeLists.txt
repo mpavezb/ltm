@@ -96,7 +96,7 @@ link_directories(${catkin_LINK_DIRS})
 add_library(ltm_plugins src/stream_collection.cpp)
 add_dependencies(ltm_plugins ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(ltm_server src/server.cpp src/episode_collection.cpp src/geometry.cpp src/plugins_manager.cpp)
+add_executable(ltm_server src/server.cpp src/episode_collection.cpp src/geometry.cpp src/plugins_manager.cpp src/plugin/emotion_manager.cpp src/plugin/location_manager.cpp src/plugin/streams_manager.cpp src/plugin/entities_manager.cpp)
 add_dependencies(ltm_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ltm_server ltm_plugins ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 

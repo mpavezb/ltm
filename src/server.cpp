@@ -23,8 +23,7 @@ namespace ltm {
         _db->setup();
 
         // Plugins manager
-        _pl.reset(new PluginsManager());
-        _pl->setup(_db->_conn, _db_name);
+        _pl.reset(new ltm::plugin::PluginsManager(_db->_conn, _db_name));
 
         // Announce services
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
@@ -83,7 +82,7 @@ namespace ltm {
         res.uid = (uint32_t) value;
 
         if (value >= 0) {
-            ltm::EpisodeRegister reg;
+            ltm::plugin::EpisodeRegister reg;
             reg.gather_emotion = req.gather_emotion;
             reg.gather_location = req.gather_location;
             reg.gather_streams = req.gather_streams;
