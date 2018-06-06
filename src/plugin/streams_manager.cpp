@@ -36,10 +36,11 @@ namespace ltm {
 
         bool StreamsManager::load_plugin(std::string plugin_name) {
             ParameterServerWrapper psw;
+            std::string param_ns = "plugins/streams/" + plugin_name + "/";
 
             // plugin class
             std::string plugin_class;
-            psw.getParameter("plugins/streams/" + plugin_name + "/class", plugin_class, "");
+            psw.getParameter(param_ns + "class", plugin_class, "");
             if (plugin_class == "") {
                 ROS_WARN_STREAM("LTM Stream plugin class for name (" << plugin_name << ") is empty. Won't use this plugin.");
                 return false;
@@ -52,24 +53,27 @@ namespace ltm {
             } catch (pluginlib::PluginlibException &ex) {
                 ROS_WARN_STREAM("The LTM Stream plugin of name (" << plugin_name << ") and class <" << plugin_class
                                                                   << "> failed to load. Error: " << ex.what());
+
+                pl_ptr.reset();
                 return false;
             }
 
-            // initialize
+            // initialize plugin
             try {
-                pl_ptr->initialize("plugins/streams/" + plugin_name + "/", _conn, _db_name);
+                pl_ptr->initialize(param_ns, _conn, _db_name);
             } catch (std::exception& e) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Stream plugin of name ("
                                 << plugin_name << ") and class <" << plugin_class << ">. Because: " << e.what());
+                pl_ptr.reset();
                 return false;
             }
 
             // save it
             ROS_INFO_STREAM("The LTM Stream plugin of name (" << plugin_name << ") and class <" << plugin_class
                                                               << "> was successfully loaded.");
-            _plugins.push_back(pl_ptr);
 
+            _plugins.push_back(pl_ptr);
             return true;
         }
 
@@ -92,7 +96,12 @@ namespace ltm {
         }
 
         void StreamsManager::unregister_episode(uint32_t uid) {
-
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    (*it)->unregister_episode(uid);
+                }
+            }
         }
     }
 }
