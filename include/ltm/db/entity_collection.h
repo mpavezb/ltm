@@ -1,5 +1,5 @@
-#ifndef LTM_PLUGIN_STREAM_COLLECTION_H
-#define LTM_PLUGIN_STREAM_COLLECTION_H
+#ifndef LTM_PLUGIN_ENTITY_COLLECTION_H
+#define LTM_PLUGIN_ENTITY_COLLECTION_H
 
 #include <ros/ros.h>
 #include <ltm/db/types.h>
@@ -8,17 +8,17 @@
 namespace ltm {
     namespace db {
 
-        template<class StreamType>
-        class StreamCollectionManager {
+        template<class EntityType>
+        class EntityCollectionManager {
         private:
-            typedef warehouse_ros::MessageCollection<StreamType> StreamCollection;
-            typedef boost::shared_ptr<StreamCollection> StreamCollectionPtr;
+            typedef warehouse_ros::MessageCollection<EntityType> EntityCollection;
+            typedef boost::shared_ptr<EntityCollection> EntityCollectionPtr;
 
-            typedef warehouse_ros::MessageWithMetadata<StreamType> StreamWithMetadata;
-            typedef boost::shared_ptr<const StreamWithMetadata> StreamWithMetadataPtr;
+            typedef warehouse_ros::MessageWithMetadata<EntityType> EntityWithMetadata;
+            typedef boost::shared_ptr<const EntityWithMetadata> EntityWithMetadataPtr;
 
             // database connection
-            StreamCollectionPtr _coll;
+            EntityCollectionPtr _coll;
             DBConnectionPtr _conn;
 
             // database parameters
@@ -42,16 +42,16 @@ namespace ltm {
             bool ltm_has(int uid);
             int ltm_count();
             bool ltm_drop_db();
-            bool ltm_get(uint32_t uid, StreamWithMetadataPtr &stream_ptr);
-            bool ltm_insert(const StreamType &stream, MetadataPtr metadata);
+            bool ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr);
+            bool ltm_insert(const EntityType &entity, MetadataPtr metadata);
             MetadataPtr ltm_create_metadata();
-            bool ltm_update(uint32_t uid, const StreamType &stream);
+            bool ltm_update(uint32_t uid, const EntityType &entity);
 
         };
 
     }
 }
 
-#include <ltm/db/stream_collection_impl.hxx>
+#include <ltm/db/entity_collection_impl.hxx>
 
-#endif //LTM_PLUGIN_STREAM_COLLECTION_H
+#endif //LTM_PLUGIN_ENTITY_COLLECTION_H

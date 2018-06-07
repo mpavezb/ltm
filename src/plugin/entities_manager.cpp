@@ -36,10 +36,11 @@ namespace ltm {
 
         bool EntitiesManager::load_plugin(std::string plugin_name) {
             ParameterServerWrapper psw;
+            std::string param_ns = "plugins/entities/" + plugin_name + "/";
 
             // plugin class
             std::string plugin_class;
-            psw.getParameter("plugins/streams/" + plugin_name + "/class", plugin_class, "");
+            psw.getParameter(param_ns + "class", plugin_class, "");
             if (plugin_class == "") {
                 ROS_WARN_STREAM("LTM Entity plugin class for name (" << plugin_name << ") is empty. Won't use this plugin.");
                 return false;
@@ -52,16 +53,18 @@ namespace ltm {
             } catch (pluginlib::PluginlibException &ex) {
                 ROS_WARN_STREAM("The LTM Entity plugin of name (" << plugin_name << ") and class <" << plugin_class
                                                                   << "> failed to load. Error: " << ex.what());
+                pl_ptr.reset();
                 return false;
             }
 
-            // initialize
+            // initialize plugin
             try {
-                pl_ptr->initialize("plugins/entities/" + plugin_name + "/", _conn, _db_name);
+                pl_ptr->initialize(param_ns, _conn, _db_name);
             } catch (std::exception& e) {
                 ROS_WARN_STREAM(
                         "Couldn't initialize the LTM Entity plugin of name ("
                                 << plugin_name << ") and class <" << plugin_class << ">. Because: " << e.what());
+                pl_ptr.reset();
                 return false;
             }
 
@@ -69,7 +72,6 @@ namespace ltm {
             ROS_INFO_STREAM("The LTM Entity plugin of name (" << plugin_name << ") and class <" << plugin_class
                                                               << "> was successfully loaded.");
             _plugins.push_back(pl_ptr);
-
             return true;
         }
 

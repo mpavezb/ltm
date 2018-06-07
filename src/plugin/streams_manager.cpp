@@ -53,7 +53,6 @@ namespace ltm {
             } catch (pluginlib::PluginlibException &ex) {
                 ROS_WARN_STREAM("The LTM Stream plugin of name (" << plugin_name << ") and class <" << plugin_class
                                                                   << "> failed to load. Error: " << ex.what());
-
                 pl_ptr.reset();
                 return false;
             }
@@ -72,7 +71,6 @@ namespace ltm {
             // save it
             ROS_INFO_STREAM("The LTM Stream plugin of name (" << plugin_name << ") and class <" << plugin_class
                                                               << "> was successfully loaded.");
-
             _plugins.push_back(pl_ptr);
             return true;
         }
