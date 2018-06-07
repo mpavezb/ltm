@@ -24,6 +24,7 @@ namespace ltm {
             ros::ServiceServer _add_stream_service;
             ros::ServiceServer _get_stream_service;
             ros::ServiceServer _delete_stream_service;
+
         public:
 
             void ltm_setup(const std::string& param_ns, DBConnectionPtr db_ptr, std::string db_name) {
@@ -51,6 +52,7 @@ namespace ltm {
             // -----------------------------------------------------------------------------------------------------------------
             // ROS API
             // -----------------------------------------------------------------------------------------------------------------
+        private:
 
             bool status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
                 ROS_INFO_STREAM(

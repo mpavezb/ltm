@@ -9,6 +9,7 @@ namespace ltm {
         template<class StreamType, class StreamSrv>
         class StreamDefault : public ltm::plugin::StreamROS<StreamType, StreamSrv> {
 
+
         };
     }
 }
