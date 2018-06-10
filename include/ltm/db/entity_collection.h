@@ -19,10 +19,12 @@ namespace ltm {
 
             // database connection
             EntityCollectionPtr _coll;
+            EntityCollectionPtr _log_coll;
             DBConnectionPtr _conn;
 
             // database parameters
             std::string _collection_name;
+            std::string _log_collection_name;
             std::string _db_name;
             std::string _type;
 
