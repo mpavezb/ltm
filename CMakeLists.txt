@@ -27,14 +27,16 @@ find_package(catkin REQUIRED
 add_message_files(
     FILES
     Date.msg
-    Episode.msg
-    Info.msg
-    What.msg
-    Where.msg
-    When.msg
-    Relevance.msg
     EmotionalRelevance.msg
+    EntityLog.msg
+    EntityRegister.msg
+    Episode.msg
     HistoricalRelevance.msg
+    Info.msg
+    Relevance.msg
+    What.msg
+    When.msg
+    Where.msg
 )
 
 ## Generate services in the 'srv' folder
