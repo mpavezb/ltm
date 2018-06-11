@@ -20,6 +20,7 @@ namespace ltm {
         void EntityCollectionManager<EntityType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
             _db_name = db_name;
             _collection_name = collection_name;
+            _log_collection_name = collection_name + "_diff";
             _log_collection_name = collection_name + "_log";
             _type = type;
             _conn = db_ptr;
@@ -34,7 +35,16 @@ namespace ltm {
             }
             try {
                 // host, port, timeout
-                _log_coll = _conn->openCollectionPtr<EntityType>(_db_name, _log_collection_name);
+                _diff_coll = _conn->openCollectionPtr<EntityType>(_db_name, _diff_collection_name);
+            }
+            catch (const warehouse_ros::DbConnectException &exception) {
+                // Connection timeout
+                ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection "
+                                                              << _diff_collection_name);
+            }
+            try {
+                // host, port, timeout
+                _log_coll = _conn->openCollectionPtr<LogType>(_db_name, _log_collection_name);
             }
             catch (const warehouse_ros::DbConnectException &exception) {
                 // Connection timeout
@@ -90,6 +100,55 @@ namespace ltm {
         }
 
         template<class EntityType>
+        void EntityCollectionManager<EntityType>::ltm_get_registry(std::vector<uint32_t> registry) {
+            registry = this->_registry;
+        }
+
+        template<class EntityType>
+        int EntityCollectionManager<EntityType>::ltm_reserve_log_uid() {
+            // TODO: find better way, maybe select the max_uid+1
+            // Returns a pseudo-random integral number in the range between 0 and RAND_MAX.
+            uint32_t max_int32 = std::numeric_limits<uint32_t>::max();
+            int max_int = std::numeric_limits<int>::max();
+            int upper_bound = max_int32 > max_int ? max_int : max_int32;
+
+            int db_size = ltm_log_count();
+            int reserved_ids = (int) _reserved_log_uids.size();
+            if (upper_bound <= db_size + reserved_ids) {
+                ROS_WARN_STREAM(
+                        "There aren't any available LOG uids. Max entries: "
+                                << upper_bound
+                                << ". LTM DB has (" << db_size << ") entries."
+                                << " There are (" << reserved_ids << ") reserved uids."
+                );
+                return -1;
+            }
+
+            int value;
+            std::set<int>::iterator it;
+            while (true) {
+                value = rand() % upper_bound;
+
+                // value is already reserved
+                it = _reserved_log_uids.find(value);
+                if (it != _reserved_log_uids.end()) continue;
+
+                // value is in db cache
+                it = _log_uids_cache.find(value);
+                if (it != _log_uids_cache.end()) continue;
+
+                // value is already in DB
+                if (ltm_log_has(value)) {
+                    _log_uids_cache.insert(value);
+                    continue;
+                }
+                break;
+            }
+            _reserved_log_uids.insert(value);
+            return value;
+        }
+
+        template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_remove(uint32_t uid) {
             // value is already reserved
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
@@ -120,15 +179,55 @@ namespace ltm {
         }
 
         template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_log_has(int uid) {
+            // TODO: doc, no revisa por uids ya registradas
+            QueryPtr query = _log_coll->createQuery();
+            query->append("log_uid", uid);
+            try {
+                _coll->findOne(query, true);
+            }
+            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+                return false;
+            }
+            return true;
+        }
+
+        template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_diff_has(int uid) {
+            // TODO: doc, no revisa por uids ya registradas
+            QueryPtr query = _diff_coll->createQuery();
+            query->append("log_uid", uid);
+            try {
+                _coll->findOne(query, true);
+            }
+            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+                return false;
+            }
+            return true;
+        }
+
+        template<class EntityType>
         int EntityCollectionManager<EntityType>::ltm_count() {
             return _coll->count();
+        }
+
+        template<class EntityType>
+        int EntityCollectionManager<EntityType>::ltm_log_count() {
+            return _log_coll->count();
+        }
+
+        template<class EntityType>
+        int EntityCollectionManager<EntityType>::ltm_diff_count() {
+            return _diff_coll->count();
         }
 
         template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_drop_db() {
             _conn->dropDatabase(_db_name);
             _registry.clear();
-            // TODO: clear cache
+            _log_uids_cache.clear();
+            _reserved_log_uids.clear();
+
             ltm_setup_db(_conn, _db_name, _collection_name, _type);
             return true;
         }
@@ -145,6 +244,21 @@ namespace ltm {
                 return false;
             }
             return true;
+        }
+
+        template<class EntityType>
+        int EntityCollectionManager<EntityType>::ltm_get_last_log_uid(uint32_t entity_uid) {
+            QueryPtr query = _coll->createQuery();
+            EntityWithMetadataPtr entity_ptr;
+            query->append("uid", (int) entity_uid);
+            try {
+                entity_ptr = _coll->findOne(query, true);
+            }
+            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+                entity_ptr.reset();
+                return 0;
+            }
+            return entity_ptr->lookupInt("log_uid");
         }
 
         template<class EntityType>

@@ -70,7 +70,8 @@ namespace ltm {
 
         void EpisodeCollectionManager::make_meta_what(const What &node, MetadataPtr meta) {
             // TODO: REQUIRES META ARRAY
-            // meta->append("what.features", node.features);
+            // meta->append("what.streams", node.streams);
+            // meta->append("what.entities.types", node.streams);
         }
 
         void EpisodeCollectionManager::make_meta_relevance(const Relevance &node, MetadataPtr meta) {
