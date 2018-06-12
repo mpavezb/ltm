@@ -96,5 +96,25 @@ namespace ltm {
         void EntitiesManager::unregister_episode(uint32_t uid) {
 
         }
+
+        void EntitiesManager::drop_db() {
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    (*it)->drop_db();
+                }
+            }
+        }
+
+        void EntitiesManager::append_status(std::stringstream &status) {
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    status << " - ";
+                    (*it)->append_status(status);
+                    status << std::endl;
+                }
+            }
+        }
     }
 }

@@ -40,7 +40,10 @@ namespace ltm {
     Server::~Server() {}
 
     void Server::show_status() {
-        ROS_INFO_STREAM(_log_prefix << "DB has " << _db->count() << " entries.");
+        std::stringstream status;
+        status << "Episodes: " << _db->count() << " entries." << std::endl;
+        _pl->append_status(status);
+        ROS_INFO_STREAM(_log_prefix << "DB Status:\n" << status.str());
     }
 
     // ==========================================================
@@ -145,6 +148,7 @@ namespace ltm {
         // TODO: this requires a synchronization mechanism
         // TODO: the connection should be closed first?
         ROS_WARN_STREAM(_log_prefix << "DELETE: Deleting all entries from collection '" << _db_collection_name << "'");
+        _pl->drop_db();
         _db->drop_db();
         show_status();
         return true;

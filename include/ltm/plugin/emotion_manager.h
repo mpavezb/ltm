@@ -24,14 +24,12 @@ namespace ltm {
 
         public:
             EmotionManager();
-
             virtual ~EmotionManager();
 
             void collect(uint32_t uid, ltm::EmotionalRelevance &msg);
-
             void register_episode(uint32_t uid);
-
             void unregister_episode(uint32_t uid);
+            void reset();
         };
     }
 }

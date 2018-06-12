@@ -17,11 +17,20 @@ namespace ltm {
         }
 
         template<class EntityType>
+        std::string EntityCollectionManager<EntityType>::ltm_get_status() {
+            std::stringstream ss;
+            ss << "Entity '" << _type << "' has (" << ltm_count()
+               << ") instances in collection '" << _collection_name
+               << "' and (" << ltm_log_count() << "/" << ltm_diff_count() << ") logs.";
+            return ss.str();
+        }
+
+        template<class EntityType>
         void EntityCollectionManager<EntityType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
             _db_name = db_name;
             _collection_name = collection_name;
-            _log_collection_name = collection_name + "_diff";
-            _diff_collection_name = collection_name + "_log";
+            _log_collection_name = collection_name + "_log";
+            _diff_collection_name = collection_name + "_diff";
             _type = type;
             _conn = db_ptr;
             try {
@@ -223,11 +232,22 @@ namespace ltm {
 
         template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_drop_db() {
-            _conn->dropDatabase(_db_name);
+            ROS_WARN_STREAM("Dropping database for '" << ltm_get_type() << "'. Collections: " << _collection_name << " and {_log, _diff}.");
+            QueryPtr query = _coll->createQuery();
+            query->appendGT("uid", -1);
+            _coll->removeMessages(query);
+
+            QueryPtr query_log = _log_coll->createQuery();
+            query->appendGT("log_uid", -1);
+            _log_coll->removeMessages(query_log);
+
+            QueryPtr query_diff = _diff_coll->createQuery();
+            query->appendGT("log_uid", -1);
+            _diff_coll->removeMessages(query_diff);
+
             _registry.clear();
             _log_uids_cache.clear();
             _reserved_log_uids.clear();
-
             ltm_setup_db(_conn, _db_name, _collection_name, _type);
             return true;
         }

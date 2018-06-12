@@ -101,5 +101,26 @@ namespace ltm {
                 }
             }
         }
+
+        void StreamsManager::drop_db() {
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    (*it)->drop_db();
+                }
+            }
+        }
+
+        void StreamsManager::append_status(std::stringstream &status) {
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    status << " - ";
+                    (*it)->append_status(status);
+                    status << std::endl;
+                }
+            }
+        }
+
     }
 }

@@ -17,6 +17,13 @@ namespace ltm {
         }
 
         template<class StreamType>
+        std::string StreamCollectionManager<StreamType>::ltm_get_status() {
+            std::stringstream ss;
+            ss << "Stream '" << _type << "' has (" << ltm_count() << ") entries in collection '" << _collection_name << "'.";
+            return ss.str();
+        }
+
+        template<class StreamType>
         void StreamCollectionManager<StreamType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
             _db_name = db_name;
             _collection_name = collection_name;
@@ -116,7 +123,10 @@ namespace ltm {
 
         template<class StreamType>
         bool StreamCollectionManager<StreamType>::ltm_drop_db() {
-            _conn->dropDatabase(_db_name);
+            ROS_WARN_STREAM("Dropping database for '" << ltm_get_type() << "'. Collection " << _collection_name << ".");
+            QueryPtr query = _coll->createQuery();
+            query->appendGT("uid", -1);
+            _coll->removeMessages(query);
             _registry.clear();
             // TODO: clear cache
             ltm_setup_db(_conn, _db_name, _collection_name, _type);

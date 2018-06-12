@@ -31,7 +31,7 @@ namespace ltm {
 
         template<class EntityType, class EntitySrv>
         bool EntityROS<EntityType, EntitySrv>::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Collection '" << this->ltm_get_collection_name() << "' has " << this->ltm_count() << " entries.");
+            ROS_INFO_STREAM(this->_log_prefix << this->ltm_get_status());
             return true;
         }
 

@@ -57,7 +57,7 @@ namespace ltm {
             std::string _log_prefix;
             std::string ltm_get_type();
             std::string ltm_get_collection_name();
-
+            std::string ltm_get_status();
 
             // registry methods
             bool ltm_register_episode(uint32_t uid);

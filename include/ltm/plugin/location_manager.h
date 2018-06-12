@@ -29,6 +29,7 @@ namespace ltm {
             void collect(uint32_t uid, ltm::Where &msg);
             void register_episode(uint32_t uid);
             void unregister_episode(uint32_t uid);
+            void reset();
         };
 
     }

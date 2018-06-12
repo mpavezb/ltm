@@ -68,5 +68,27 @@ namespace ltm {
             if (reg.gather_entities) _entities_manager->collect(uid, episode.what, reg.start, reg.end);
             unregister_episode(uid);
         }
+
+        void PluginsManager::drop_db() {
+            registry.clear();
+            ROS_WARN_STREAM("Resetting Location Manager ...");
+            _location_manager->reset();
+
+            ROS_WARN_STREAM("Resetting Emotion Manager ...");
+            _emotion_manager->reset();
+
+            ROS_WARN_STREAM("Dropping Entity Databases ...");
+            _entities_manager->drop_db();
+
+            ROS_WARN_STREAM("Dropping Stream Databases ...");
+            _streams_manager->drop_db();
+        }
+
+        void PluginsManager::append_status(std::stringstream &status) {
+            status << "Entity Plugins: \n";
+            _entities_manager->append_status(status);
+            status << "Stream Plugins: \n";
+            _streams_manager->append_status(status);
+        }
     }
 }

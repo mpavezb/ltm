@@ -27,14 +27,13 @@ namespace ltm {
 
         public:
             EntitiesManager(DBConnectionPtr ptr, std::string db_name);
-
             virtual ~EntitiesManager();
 
             void collect(uint32_t uid, ltm::What &msg, ros::Time start, ros::Time end);
-
             void register_episode(uint32_t uid);
-
             void unregister_episode(uint32_t uid);
+            void drop_db();
+            void append_status(std::stringstream &status);
         };
     }
 }

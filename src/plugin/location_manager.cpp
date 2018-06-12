@@ -58,5 +58,9 @@ namespace ltm {
         void LocationManager::unregister_episode(uint32_t uid) {
             if (_use_plugin) _plugin->unregister_episode(uid);
         }
+
+        void LocationManager::reset() {
+            if (_use_plugin) _plugin->reset();
+        }
     }
 }

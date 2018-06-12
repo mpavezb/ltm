@@ -60,5 +60,9 @@ namespace ltm {
             if (_use_plugin) _plugin->unregister_episode(uid);
         }
 
+        void EmotionManager::reset() {
+            if (_use_plugin) _plugin->reset();
+        }
+
     }
 }

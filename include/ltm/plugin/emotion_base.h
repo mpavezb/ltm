@@ -16,6 +16,8 @@ namespace ltm {
 
             virtual void collect(uint32_t uid, ltm::EmotionalRelevance &msg) = 0;
 
+            virtual void reset() = 0;
+
             virtual ~EmotionBase() {}
 
         protected:

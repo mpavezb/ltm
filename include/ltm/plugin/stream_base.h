@@ -19,6 +19,8 @@ namespace ltm {
             virtual void unregister_episode(uint32_t uid) = 0;
             virtual void collect(uint32_t uid, ltm::What &msg, ros::Time _start, ros::Time _end) = 0;
             virtual void degrade(uint32_t uid) = 0;
+            virtual void drop_db() = 0;
+            virtual void append_status(std::stringstream &status) = 0;
         };
     }
 }
