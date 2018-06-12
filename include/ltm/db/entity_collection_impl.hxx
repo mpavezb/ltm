@@ -21,7 +21,7 @@ namespace ltm {
             _db_name = db_name;
             _collection_name = collection_name;
             _log_collection_name = collection_name + "_diff";
-            _log_collection_name = collection_name + "_log";
+            _diff_collection_name = collection_name + "_log";
             _type = type;
             _conn = db_ptr;
             try {
@@ -272,14 +272,44 @@ namespace ltm {
         }
 
         template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_log_insert(const LogType &log, MetadataPtr metadata) {
+            _log_coll->insert(log, metadata);
+            // todo: insert into cache
+            ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG (" << log.log_uid << ") for entity (" << log.entity_uid
+                                        << ") into collection " << "'" << _log_collection_name
+                                        << "'. LOG has (" << ltm_log_count() << ") entries."
+            );
+            return true;
+        }
+
+        template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_diff_insert(const EntityType &diff, MetadataPtr metadata) {
+            _diff_coll->insert(diff, metadata);
+            // todo: insert into cache
+            ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG DIFF (" << diff.log_uid << ") for entity (" << diff.uid
+                                        << ") into collection " << "'" << _diff_collection_name
+                                        << "'. LOG DIFF has (" << ltm_diff_count() << ") entries."
+            );
+            return true;
+        }
+
+        template<class EntityType>
         MetadataPtr EntityCollectionManager<EntityType>::ltm_create_metadata() {
             return _coll->createMetadata();
         }
 
         template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_update(uint32_t uid, const EntityType &entity) {
-//            ROS_WARN("UPDATE: Method not implemented");
-//            return false;
+        bool EntityCollectionManager<EntityType>::ltm_update(uint32_t uid, const EntityType &entity, MetadataPtr metadata) {
+            if (!ltm_has(uid)) {
+                ltm_insert(entity, metadata);
+            }
+            ltm_remove(uid);
+            _coll->insert(entity, metadata);
+            // todo: insert into cache
+            ROS_INFO_STREAM(_log_prefix << "Updating entity (" << entity.uid << ") from collection "
+                                        << "'" << _collection_name << "'. (" << ltm_count() << ") entries."
+            );
+            return true;
         }
 
     }

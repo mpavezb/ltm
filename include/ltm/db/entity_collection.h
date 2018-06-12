@@ -34,8 +34,6 @@ namespace ltm {
             typedef warehouse_ros::MessageCollection<LogType> LogCollection;
             typedef boost::shared_ptr<LogCollection> LogCollectionPtr;
 
-
-
             // database connection
             EntityCollectionPtr _coll;
             EntityCollectionPtr _diff_coll;
@@ -72,10 +70,12 @@ namespace ltm {
             int ltm_log_count();
             bool ltm_log_has(int uid);
             int ltm_get_last_log_uid(uint32_t entity_uid);
+            bool ltm_log_insert(const LogType &log, MetadataPtr metadata);
 
             // DIFF DB Methods
             int ltm_diff_count();
             bool ltm_diff_has(int uid);
+            bool ltm_diff_insert(const EntityType &diff, MetadataPtr metadata);
 
             // ENTITY DB Methods
             void ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type);
@@ -88,10 +88,7 @@ namespace ltm {
 
             bool ltm_insert(const EntityType &entity, MetadataPtr metadata);
             MetadataPtr ltm_create_metadata();
-            bool ltm_update(uint32_t uid, const EntityType &entity);
-
-
-
+            bool ltm_update(uint32_t uid, const EntityType &entity, MetadataPtr metadata);
         };
 
     }
