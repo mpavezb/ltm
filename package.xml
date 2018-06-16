@@ -22,7 +22,6 @@
     <buildtool_depend>catkin</buildtool_depend>
 
     <!-- build, export, and execution dependencies -->
-    <depend>warehouse_ros_mongo</depend>
     <depend>rospy</depend>
     <depend>roscpp</depend>
     <depend>std_srvs</depend>
@@ -32,6 +31,7 @@
     <depend>smach</depend>
     <depend>smach_ros</depend>
     <depend>pluginlib</depend>
+    <depend>ltm_db</depend>
 
 
     <!-- build dependencies -->

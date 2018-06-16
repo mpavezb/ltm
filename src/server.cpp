@@ -2,7 +2,7 @@
 #include <ltm/server.h>
 #include <boost/scoped_ptr.hpp>
 
-using warehouse_ros::Metadata;
+using ltm_db::Metadata;
 
 
 namespace ltm {

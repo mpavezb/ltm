@@ -352,7 +352,7 @@ namespace ltm {
 
             // get episode
             if (!get(uid, ep_ptr)) {
-                throw warehouse_ros::NoMatchingMessageException("episode not found");
+                throw ltm_db::NoMatchingMessageException("episode not found");
             }
             updated_episode = *ep_ptr;
 
@@ -420,12 +420,12 @@ namespace ltm {
             // setup DB
             try {
                 // host, port, timeout
-                _conn.reset(new warehouse_ros_mongo::MongoDatabaseConnection());
+                _conn.reset(new ltm_db_mongo::MongoDatabaseConnection());
                 _conn->setParams(_db_host, _db_port, _db_timeout);
                 _conn->connect();
                 _coll = _conn->openCollectionPtr<Episode>(_db_name, _db_collection_name);
             }
-            catch (const warehouse_ros::DbConnectException &exception) {
+            catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
                 ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "'.");
                 ros::shutdown();
@@ -458,7 +458,7 @@ namespace ltm {
             try {
                 episode_ptr = _coll->findOne(query, false);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 episode_ptr.reset();
                 return false;
             }
@@ -562,7 +562,7 @@ namespace ltm {
             try {
                 _coll->findOne(query, true);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 return false;
             }
             return true;

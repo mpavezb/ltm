@@ -13,7 +13,7 @@ namespace ltm {
         template<class StreamType, class StreamSrv>
         class StreamROS : public ltm::db::StreamCollectionManager<StreamType> {
         private:
-            typedef warehouse_ros::MessageWithMetadata<StreamType> StreamWithMetadata;
+            typedef ltm_db::MessageWithMetadata<StreamType> StreamWithMetadata;
             typedef boost::shared_ptr<const StreamWithMetadata> StreamWithMetadataPtr;
             typedef typename StreamSrv::Request StreamSrvRequest;
             typedef typename StreamSrv::Response StreamSrvResponse;

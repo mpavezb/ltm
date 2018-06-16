@@ -33,7 +33,7 @@ namespace ltm {
                 // host, port, timeout
                 _coll = _conn->openCollectionPtr<StreamType>(_db_name, _collection_name);
             }
-            catch (const warehouse_ros::DbConnectException &exception) {
+            catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
                 ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection "
                                                               << _collection_name);
@@ -110,7 +110,7 @@ namespace ltm {
             try {
                 _coll->findOne(query, true);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 return false;
             }
             return true;
@@ -140,7 +140,7 @@ namespace ltm {
             try {
                 stream_ptr = _coll->findOne(query, false);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 stream_ptr.reset();
                 return false;
             }

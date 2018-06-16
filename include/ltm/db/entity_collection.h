@@ -18,20 +18,20 @@ namespace ltm {
         class EntityCollectionManager {
         private:
             // Entity Types
-            typedef warehouse_ros::MessageWithMetadata<EntityType> EntityWithMetadata;
+            typedef ltm_db::MessageWithMetadata<EntityType> EntityWithMetadata;
             typedef boost::shared_ptr<const EntityWithMetadata> EntityWithMetadataPtr;
 
             // Log Message Types
             typedef EntityLog LogType;
-            typedef warehouse_ros::MessageWithMetadata<LogType> LogWithMetadata;
+            typedef ltm_db::MessageWithMetadata<LogType> LogWithMetadata;
             typedef boost::shared_ptr<const LogWithMetadata> LogWithMetadataPtr;
 
             // Entity Collection
-            typedef warehouse_ros::MessageCollection<EntityType> EntityCollection;
+            typedef ltm_db::MessageCollection<EntityType> EntityCollection;
             typedef boost::shared_ptr<EntityCollection> EntityCollectionPtr;
 
             // Log Message Collection
-            typedef warehouse_ros::MessageCollection<LogType> LogCollection;
+            typedef ltm_db::MessageCollection<LogType> LogCollection;
             typedef boost::shared_ptr<LogCollection> LogCollectionPtr;
 
             // database connection

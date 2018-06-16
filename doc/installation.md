@@ -6,7 +6,6 @@
 - OS: Ubuntu 16.04
 - ROS:
 	- ROS kinetic
-	- warehouse_ros_mongo 
 
 
 ### Install mongodb server

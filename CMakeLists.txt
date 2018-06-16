@@ -15,7 +15,7 @@ find_package(catkin REQUIRED
     geometry_msgs
     sensor_msgs
     message_generation
-    warehouse_ros_mongo
+    ltm_db
     pluginlib
 )
 
@@ -80,7 +80,7 @@ generate_messages(
 catkin_package(
     INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include include
     LIBRARIES ltm_plugins
-    CATKIN_DEPENDS roscpp std_srvs std_msgs geometry_msgs sensor_msgs message_runtime warehouse_ros_mongo
+    CATKIN_DEPENDS roscpp std_srvs std_msgs geometry_msgs sensor_msgs message_runtime ltm_db
     DEPENDS
 )
 

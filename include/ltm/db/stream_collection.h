@@ -11,10 +11,10 @@ namespace ltm {
         template<class StreamType>
         class StreamCollectionManager {
         private:
-            typedef warehouse_ros::MessageCollection<StreamType> StreamCollection;
+            typedef ltm_db::MessageCollection<StreamType> StreamCollection;
             typedef boost::shared_ptr<StreamCollection> StreamCollectionPtr;
 
-            typedef warehouse_ros::MessageWithMetadata<StreamType> StreamWithMetadata;
+            typedef ltm_db::MessageWithMetadata<StreamType> StreamWithMetadata;
             typedef boost::shared_ptr<const StreamWithMetadata> StreamWithMetadataPtr;
 
             // database connection

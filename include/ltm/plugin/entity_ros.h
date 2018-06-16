@@ -14,12 +14,12 @@ namespace ltm {
         class EntityROS : public ltm::db::EntityCollectionManager<EntityType> {
         private:
             // Entity Types
-            typedef warehouse_ros::MessageWithMetadata<EntityType> EntityWithMetadata;
+            typedef ltm_db::MessageWithMetadata<EntityType> EntityWithMetadata;
             typedef boost::shared_ptr<const EntityWithMetadata> EntityWithMetadataPtr;
 
             // Log Message Types
             typedef EntityLog LogType;
-            typedef warehouse_ros::MessageWithMetadata<LogType> LogWithMetadata;
+            typedef ltm_db::MessageWithMetadata<LogType> LogWithMetadata;
             typedef boost::shared_ptr<const LogWithMetadata> LogWithMetadataPtr;
 
             typedef typename EntitySrv::Request EntitySrvRequest;

@@ -37,7 +37,7 @@ namespace ltm {
                 // host, port, timeout
                 _coll = _conn->openCollectionPtr<EntityType>(_db_name, _collection_name);
             }
-            catch (const warehouse_ros::DbConnectException &exception) {
+            catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
                 ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection "
                                                               << _collection_name);
@@ -46,7 +46,7 @@ namespace ltm {
                 // host, port, timeout
                 _diff_coll = _conn->openCollectionPtr<EntityType>(_db_name, _diff_collection_name);
             }
-            catch (const warehouse_ros::DbConnectException &exception) {
+            catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
                 ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection "
                                                               << _diff_collection_name);
@@ -55,7 +55,7 @@ namespace ltm {
                 // host, port, timeout
                 _log_coll = _conn->openCollectionPtr<LogType>(_db_name, _log_collection_name);
             }
-            catch (const warehouse_ros::DbConnectException &exception) {
+            catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
                 ROS_ERROR_STREAM("Connection timeout to DB '" << _db_name << "' while trying to open collection "
                                                               << _log_collection_name);
@@ -181,7 +181,7 @@ namespace ltm {
             try {
                 _coll->findOne(query, true);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 return false;
             }
             return true;
@@ -195,7 +195,7 @@ namespace ltm {
             try {
                 _coll->findOne(query, true);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 return false;
             }
             return true;
@@ -209,7 +209,7 @@ namespace ltm {
             try {
                 _coll->findOne(query, true);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 return false;
             }
             return true;
@@ -259,7 +259,7 @@ namespace ltm {
             try {
                 entity_ptr = _coll->findOne(query, false);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 entity_ptr.reset();
                 return false;
             }
@@ -274,7 +274,7 @@ namespace ltm {
             try {
                 entity_ptr = _coll->findOne(query, true);
             }
-            catch (const warehouse_ros::NoMatchingMessageException &exception) {
+            catch (const ltm_db::NoMatchingMessageException &exception) {
                 entity_ptr.reset();
                 return 0;
             }

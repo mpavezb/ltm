@@ -8,10 +8,10 @@
 #include <ltm/db/types.h>
 #include <ltm/Episode.h>
 
-typedef warehouse_ros::MessageCollection<ltm::Episode> EpisodeCollection;
+typedef ltm_db::MessageCollection<ltm::Episode> EpisodeCollection;
 typedef boost::shared_ptr<EpisodeCollection> EpisodeCollectionPtr;
 
-typedef warehouse_ros::MessageWithMetadata<ltm::Episode> EpisodeWithMetadata;
+typedef ltm_db::MessageWithMetadata<ltm::Episode> EpisodeWithMetadata;
 typedef boost::shared_ptr<const EpisodeWithMetadata> EpisodeWithMetadataPtr;
 
 namespace ltm {
