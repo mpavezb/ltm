@@ -84,7 +84,8 @@ namespace ltm {
         }
         res.uid = (uint32_t) value;
 
-        if (value >= 0) {
+        // Only LEAVES get registered on plugins
+        if (value >= 0 && req.is_leaf) {
             ltm::plugin::EpisodeRegister reg;
             reg.gather_emotion = req.gather_emotion;
             reg.gather_location = req.gather_location;
@@ -111,10 +112,16 @@ namespace ltm {
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
         bool replace = false;
 
-        // only collect information for LEAFs
         if (req.episode.type == ltm::Episode::LEAF) {
+            // only collect information for LEAFs
             _pl->collect(req.episode.uid, req.episode);
+        } else {
+            // update node based on its children
+            // THIS REQUIRES THE CHILDREN_IDS FIELD TO BE SET UP.
+            // TODO: rework design to not require this field. It can be built automatically while adding children.
+            _db->update_from_children(req.episode);
         }
+
 
         // insert episode
         if (_db->has(req.episode.uid)) {
@@ -129,9 +136,9 @@ namespace ltm {
         }
         _db->insert(req.episode);
 
-        // unregister parent (if it is still registered)
-        _pl->unregister_episode(req.episode.parent_id);
-        
+        // TODO: update branch up to the root
+        // impl
+
         // finish
         ROS_INFO_STREAM_COND(replace, _log_prefix << "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
         ROS_INFO_STREAM_COND(!replace, _log_prefix << "ADD: New episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
@@ -146,7 +153,6 @@ namespace ltm {
 
     bool Server::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
         // TODO: this requires a synchronization mechanism
-        // TODO: the connection should be closed first?
         ROS_WARN_STREAM(_log_prefix << "DELETE: Deleting all entries from collection '" << _db_collection_name << "'");
         _pl->drop_db();
         _db->drop_db();

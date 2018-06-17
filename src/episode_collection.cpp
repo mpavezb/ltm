@@ -11,8 +11,7 @@
 namespace ltm {
     namespace db {
 
-        EpisodeCollectionManager::EpisodeCollectionManager(const std::string &name, const std::string &collection, const std::string &host, uint port,
-                         float timeout) {
+        EpisodeCollectionManager::EpisodeCollectionManager(const std::string &name, const std::string &collection, const std::string &host, uint port, float timeout) {
             _db_name = name;
             _db_collection_name = collection;
             _db_host = host;
@@ -40,11 +39,9 @@ namespace ltm {
             meta->append("uid", (int) node.uid);
             meta->append("type", node.type);
             meta->append("parent_id", (int) node.parent_id);
-
-            // TODO: REQUIRES META ARRAY
-            // meta->append("children_ids", node.children_ids);
-            // meta->append("tags", node.tags);
-            // meta->append("children_tags", node.children_tags);
+            meta->append("children_ids", node.children_ids);
+            meta->append("tags", node.tags);
+            meta->append("children_tags", node.children_tags);
         }
 
         void EpisodeCollectionManager::make_meta_info(const Info &node, MetadataPtr meta) {
@@ -59,19 +56,38 @@ namespace ltm {
         }
 
         void EpisodeCollectionManager::make_meta_where(const Where &node, MetadataPtr meta) {
-            // TODO: how to manage leaf vs node information
+            meta->append("where.frame_id", node.frame_id);
+            meta->append("where.map_name", node.map_name);
+            meta->append("where.position_x", node.position.x);
+            meta->append("where.position_y", node.position.y);
             meta->append("where.location", node.location);
             meta->append("where.area", node.area);
-
-            // TODO: REQUIRES META ARRAY
-            // meta->append("where.children_locations", node.children_locations);
-            // meta->append("where.children_areas", node.children_areas);
+            meta->append("where.children_locations", node.children_locations);
+            meta->append("where.children_areas", node.children_areas);
         }
 
         void EpisodeCollectionManager::make_meta_what(const What &node, MetadataPtr meta) {
-            // TODO: REQUIRES META ARRAY
-            // meta->append("what.streams", node.streams);
-            // meta->append("what.entities.types", node.streams);
+            // STREAMS
+            std::vector<std::string> stream_types;
+            std::vector<uint32_t> stream_uids;
+            std::vector<ltm::StreamRegister>::const_iterator s_it;
+            for (s_it = node.streams.begin(); s_it != node.streams.end(); ++s_it) {
+                stream_types.push_back(s_it->type);
+                stream_uids.push_back(s_it->uid);
+            }
+            meta->append("what.stream.types", stream_types);
+            meta->append("what.stream.uids", stream_uids);
+
+            // ENTITIES
+            std::vector<std::string> entity_types;
+            std::vector<uint32_t> entity_uids;
+            std::vector<ltm::EntityRegister>::const_iterator e_it;
+            for (e_it = node.entities.begin(); e_it != node.entities.end(); ++e_it) {
+                entity_types.push_back(e_it->type);
+                entity_uids.push_back(e_it->uid);
+            }
+            meta->append("what.entities.types", entity_types);
+            meta->append("what.entities.uids", entity_uids);
         }
 
         void EpisodeCollectionManager::make_meta_relevance(const Relevance &node, MetadataPtr meta) {
@@ -96,10 +112,8 @@ namespace ltm {
         void EpisodeCollectionManager::make_meta_relevance_emotional(const EmotionalRelevance &node, MetadataPtr meta) {
             meta->append("relevance.emotional.emotion", node.emotion);
             meta->append("relevance.emotional.value", node.value);
-
-            // TODO: REQUIRES META ARRAY
-            // meta->append("relevance.emotional.children_emotions", node.children_emotions);
-            // meta->append("relevance.emotional.children_values", node.children_values);
+            meta->append("relevance.emotional.children_emotions", node.children_emotions);
+            meta->append("relevance.emotional.children_values", node.children_values);
         }
 
         MetadataPtr EpisodeCollectionManager::make_metadata(const Episode &episode) {
@@ -142,6 +156,21 @@ namespace ltm {
             std::sort(result.begin(), result.end());
         }
 
+        void EpisodeCollectionManager::update_tree_init(ltm::Episode &node) {
+            update_tree_tags_init(node);
+            update_tree_info_init(node.info);
+            update_tree_when_init(node.when);
+            update_tree_where_init(node.where);
+            update_tree_what_init(node.what);
+            update_tree_relevance_init(node.relevance);
+        }
+
+        bool EpisodeCollectionManager::update_tree_last(ltm::Episode &node, std::vector<geometry_msgs::Point> &positions) {
+            bool result = true;
+            result = result && update_tree_where_last(node.where, positions);
+            return result;
+        }
+
         void EpisodeCollectionManager::update_tree_tags_init(Episode &node) {
             // do not clear own tags!.
             node.children_tags.clear();
@@ -161,18 +190,29 @@ namespace ltm {
         }
 
         bool EpisodeCollectionManager::update_tree_info(Info &node, const Info &child) {
-            // TODO: register this: n_usages parent = SUM children
+            // TODO: DOC n_usages parent = SUM children
             int n_usages = node.n_usages;
+
+            // keep last children information
             if (node.creation_date < child.creation_date) {
                 node = child;
             }
+
+            // and add n_usages
             node.n_usages += n_usages;
             return true;
         }
 
         void EpisodeCollectionManager::update_tree_when_init(When &node) {
-            node.start = ros::Time::now();
-            node.end = ros::Time(0, 0);
+            // TODO: DESIGN DECISION.. only update if children is not contained by the episode.
+
+            // avoid default values
+            if (node.start == ros::Time()) node.start = ros::Time::now();
+            if (node.end == ros::Time()) node.start = ros::Time(0, 0);
+
+            // By uncommenting this lines, only children WHEN values will be considered.
+            // node.start = ros::Time::now();
+            // node.end = ros::Time(0, 0);
         }
 
         bool EpisodeCollectionManager::update_tree_when(When &node, const When &child) {
@@ -187,14 +227,20 @@ namespace ltm {
 
         void EpisodeCollectionManager::update_tree_where_init(Where &node) {
             // node is never a leaf!
-            node.location = "";
-            node.area = "";
+
+            // numerical info
             node.frame_id = "";
             node.map_name = "";
+            node.position = geometry_msgs::Point();
+
+            // semantic info
+            node.location = "";
+            node.area = "";
+
+            // children information
             node.children_locations.clear();
             node.children_areas.clear();
             node.children_hull.clear();
-            node.position = geometry_msgs::Point();
         }
 
         bool EpisodeCollectionManager::update_tree_where_last(Where &node, std::vector<geometry_msgs::Point> &positions) {
@@ -209,29 +255,28 @@ namespace ltm {
             return true;
         }
 
-        bool EpisodeCollectionManager::update_tree_where(Where &node, const Where &child, bool is_leaf, int node_uid, int child_uid,
-                                        std::vector<geometry_msgs::Point> &positions) {
+        bool EpisodeCollectionManager::update_tree_where(Where &node, const Where &child, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions) {
             if (is_leaf) {
                 std::vector<std::string> child_location;
                 child_location.push_back(child.location);
                 vector_merge(node.children_locations, child_location);
 
                 std::vector<std::string> child_area;
-                child_location.push_back(child.area);
-                vector_merge(node.children_locations, child_area);
+                child_area.push_back(child.area);
+                vector_merge(node.children_areas, child_area);
 
                 // just a point
                 positions.push_back(child.position);
             } else {
                 vector_merge(node.children_locations, child.children_locations);
-                vector_merge(node.children_locations, child.children_areas);
+                vector_merge(node.children_areas, child.children_areas);
 
                 // join children hull + other points
                 positions.reserve(positions.size() + child.children_hull.size());
                 positions.insert(positions.end(), child.children_hull.begin(), child.children_hull.end());
             }
 
-            // TODO: WRITE limitation SOMEWHERE: require same frame_id and map_name on a tree
+            // TODO: DOC: require same frame_id and map_name on a tree
             // frame_id and map_name must be the same for all children
             bool result = true;
             if (node.map_name == "" && node.frame_id == "") {
@@ -241,16 +286,12 @@ namespace ltm {
             } else {
                 // next children checks
                 if (node.frame_id != child.frame_id) {
-                    ROS_WARN_STREAM(
-                            "UPDATE: parent ("
-                                    << node_uid << ") where.frame_id {" << node.frame_id
+                    ROS_WARN_STREAM("UPDATE: parent (" << node_uid << ") where.frame_id {" << node.frame_id
                                     << "} does not match child's (" << child_uid << ") {" << child.frame_id << "}.");
                     result = false;
                 }
                 if (node.map_name != child.map_name) {
-                    ROS_WARN_STREAM(
-                            "UPDATE: parent ("
-                                    << node_uid << ") where.map_name {" << node.map_name
+                    ROS_WARN_STREAM("UPDATE: parent (" << node_uid << ") where.map_name {" << node.map_name
                                     << "} does not match child's (" << child_uid << ") {" << child.map_name << "}.");
                     result = false;
                 }
@@ -259,11 +300,71 @@ namespace ltm {
         }
 
         void EpisodeCollectionManager::update_tree_what_init(What &node) {
-            // TODO
+            node.entities.clear();
+            node.streams.clear();
         }
 
-        bool EpisodeCollectionManager::update_tree_what(What &node, const What &child, bool is_leaf) {
-            // TODO
+        struct StreamRegisterCompare : public std::unary_function<ltm::StreamRegister, bool>
+        {
+            ltm::StreamRegister baseline;
+            explicit StreamRegisterCompare(const ltm::StreamRegister &baseline) : baseline(baseline) {}
+            bool operator() (const ltm::StreamRegister &arg) {
+                return arg.uid == baseline.uid && arg.type == baseline.type;
+            }
+        };
+
+        struct EntityRegisterCompare : public std::unary_function<ltm::EntityRegister, bool>
+        {
+            ltm::EntityRegister baseline;
+            explicit EntityRegisterCompare(const ltm::EntityRegister &baseline) : baseline(baseline) {}
+            bool operator() (const ltm::EntityRegister &arg) {
+                return arg.uid == baseline.uid && arg.type == baseline.type;
+            }
+        };
+
+        void EpisodeCollectionManager::uid_vector_merge(std::vector<uint32_t> &result, const std::vector<uint32_t> &source) {
+            std::vector<uint32_t >::const_iterator it;
+            for (it = source.begin(); it != source.end(); ++it) {
+                if (std::find(result.begin(), result.end(), *it) == result.end()) {
+                    result.push_back(*it);
+                }
+            }
+            std::sort(result.begin(), result.end());
+        }
+
+        bool EpisodeCollectionManager::update_tree_what(What &node, const What &child) {
+            bool result = true;
+            result = result && this->update_tree_what_streams(node, child);
+            result = result && this->update_tree_what_entities(node, child);
+            return result;
+        }
+
+        bool EpisodeCollectionManager::update_tree_what_streams(What &node, const What &child) {
+            // Append StreamRegister fields keeping unique values.
+            std::vector<StreamRegister>::const_iterator s_it, sf_it;
+            for (s_it = child.streams.begin(); s_it != child.streams.end(); ++s_it) {
+                sf_it = std::find_if(node.streams.begin(), node.streams.end(), StreamRegisterCompare(*s_it));
+                if (sf_it == node.streams.end()) {
+                    node.streams.push_back(*s_it);
+                }
+            }
+            return true;
+        }
+
+        bool EpisodeCollectionManager::update_tree_what_entities(What &node, const What &child) {
+            // Add new EntityRegister fields and update log uids for existent registers.
+            std::vector<EntityRegister>::const_iterator e_it;
+            std::vector<EntityRegister>::iterator ef_it;
+            for (e_it = child.entities.begin(); e_it != child.entities.end(); ++e_it) {
+                ef_it = std::find_if(node.entities.begin(), node.entities.end(), EntityRegisterCompare(*e_it));
+                if (ef_it == node.entities.end()) {
+                    // new register
+                    node.entities.push_back(*e_it);
+                } else {
+                    // already exists: merge
+                    this->uid_vector_merge(ef_it->log_uids, e_it->log_uids);
+                }
+            }
             return true;
         }
 
@@ -298,7 +399,7 @@ namespace ltm {
             node.children_emotions = tmp;
 
             static const float arr2[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-            std::vector<float> tmp2(arr, arr + sizeof(arr2) / sizeof(arr2[0]));
+            std::vector<float> tmp2(arr2, arr2 + sizeof(arr2) / sizeof(arr2[0]));
             node.children_values.clear();
             node.children_values = tmp2;
 
@@ -306,17 +407,16 @@ namespace ltm {
             node.emotion = EmotionalRelevance::JOY;
             node.value = 0.0;
 
-            // TODO: WRITE THIS SOMEWHERE parent does not uses this information
+            // TODO: DOC parent does not uses this information
             node.software = "";
             node.software_version = "";
             node.registered_emotions.clear();
             node.registered_values.clear();
         }
 
-        bool EpisodeCollectionManager::update_tree_relevance_emotional(EmotionalRelevance &node, const EmotionalRelevance &child,
-                                                      bool is_leaf) {
-            // TODO: WRITE THIS: children_emotions/values are keep ordered by emotion number
-            // TODO: WRITE THIS keep max values on arrays and single field.
+        bool EpisodeCollectionManager::update_tree_relevance_emotional(EmotionalRelevance &node, const EmotionalRelevance &child, bool is_leaf) {
+            // TODO: DOC: children_emotions/values are keep ordered by emotion number
+            // TODO: DOC keep max values on arrays and single field.
             ROS_DEBUG_STREAM(" --> emo: node (pre) (" << node.emotion << ", " << node.value << ")");
             ROS_DEBUG_STREAM(" -->      child      (" << child.emotion << ", " << child.value << ")");
             if (is_leaf) {
@@ -363,35 +463,22 @@ namespace ltm {
             }
 
             // init fields
-            update_tree_tags_init(updated_episode);
-            update_tree_info_init(updated_episode.info);
-            update_tree_when_init(updated_episode.when);
-            update_tree_where_init(updated_episode.where);
-            update_tree_what_init(updated_episode.what);
-            update_tree_relevance_init(updated_episode.relevance);
+            this->update_tree_init(updated_episode);
 
             // process children
-            bool is_leaf;
             bool result = true;
             std::vector<geometry_msgs::Point> positions;
             std::vector<uint32_t>::const_iterator c_it;
             Episode child;
             for (c_it = ep_ptr->children_ids.begin(); c_it != ep_ptr->children_ids.end(); ++c_it) {
-
+                // recurse to children
                 result = result && update_tree_node(*c_it, child);
-                is_leaf = (child.type == Episode::LEAF);
 
-                // update components
-                result = result && update_tree_tags(updated_episode, child);
-                result = result && update_tree_info(updated_episode.info, child.info);
-                result = result && update_tree_when(updated_episode.when, child.when);
-                result = result &&
-                         update_tree_where(updated_episode.where, child.where, is_leaf, uid, child.uid, positions);
-                result = result && update_tree_what(updated_episode.what, child.what, is_leaf);
-                result = result && update_tree_relevance(updated_episode.relevance, child.relevance, is_leaf);
+                // update fields
+                result = result && this->update_from_child(updated_episode, child, positions);
             }
             // finish fields
-            result = result && update_tree_where_last(updated_episode.where, positions);
+            result = result && this->update_tree_last(updated_episode, positions);
 
             // save updated episode
             // TODO: update instead of remove/insert
@@ -585,5 +672,42 @@ namespace ltm {
             return true;
         }
 
+        bool EpisodeCollectionManager::update_from_children(ltm::Episode &episode) {
+
+            // init fields
+            this->update_tree_init(episode);
+
+            // iterate over children
+            std::vector<uint32_t> bad_children;
+            std::vector<uint32_t>::const_iterator it;
+            std::vector<geometry_msgs::Point> positions;
+            bool result = true;
+            for (it = episode.children_ids.begin(); it != episode.children_ids.end(); ++it) {
+                EpisodeWithMetadataPtr child_ptr;
+                if (!this->get(*it, child_ptr)) {
+                    bad_children.push_back(*it);
+                    continue;
+                }
+                result = result && this->update_from_child(episode, *child_ptr, positions);
+            }
+
+            // end fields
+            result = result && this->update_tree_last(episode, positions);
+
+            // TODO: remove bad children from children_ids
+            return result;
+        }
+
+        bool EpisodeCollectionManager::update_from_child(ltm::Episode &node, const ltm::Episode &child, std::vector<geometry_msgs::Point> &positions) {
+            bool result = true;
+            bool is_leaf = (child.type == ltm::Episode::LEAF);
+            result = result && update_tree_tags(node, child);
+            result = result && update_tree_info(node.info, child.info);
+            result = result && update_tree_when(node.when, child.when);
+            result = result && update_tree_where(node.where, child.where, is_leaf, node.uid, child.uid, positions);
+            result = result && update_tree_what(node.what, child.what);
+            result = result && update_tree_relevance(node.relevance, child.relevance, is_leaf);
+            return result;
+        }
     }
 }

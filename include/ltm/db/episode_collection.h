@@ -52,6 +52,7 @@ namespace ltm {
             bool update_tree_node(int uid, Episode &updated_episode);
 
             // init methods
+            void update_tree_init(Episode &node);
             void update_tree_tags_init(Episode &node);
             void update_tree_info_init(Info &node);
             void update_tree_when_init(When &node);
@@ -66,16 +67,20 @@ namespace ltm {
             bool update_tree_info(Info &node, const Info &child);
             bool update_tree_when(When &node, const When &child);
             bool update_tree_where(Where &node, const Where &child, bool is_leaf, int node_uid, int child_uid, std::vector<geometry_msgs::Point> &positions);
-            bool update_tree_what(What &node, const What &child, bool is_leaf);
+            bool update_tree_what(What &node, const What &child);
+            bool update_tree_what_streams(What &node, const What &child);
+            bool update_tree_what_entities(What &node, const What &child);
             bool update_tree_relevance(Relevance &node, const Relevance &child, bool is_leaf);
             bool update_tree_relevance_historical(HistoricalRelevance &node, const HistoricalRelevance &child);
             bool update_tree_relevance_emotional(EmotionalRelevance &node, const EmotionalRelevance &child, bool is_leaf);
 
             // ending methods
+            bool update_tree_last(Episode &node, std::vector<geometry_msgs::Point> &positions);
             bool update_tree_where_last(Where &node, std::vector<geometry_msgs::Point> &positions);
 
             // tools
             // -------------------------------------------------------------------------------------------------------------
+            void uid_vector_merge(std::vector<uint32_t> &result, const std::vector<uint32_t> &source);
             void vector_merge(std::vector<std::string> &result, const std::vector<std::string> &source);
             std::string vector_to_str(const std::vector<std::string> &array);
 
@@ -100,6 +105,9 @@ namespace ltm {
             bool is_reserved(int uid);
             bool update_tree(int uid);
             bool drop_db();
+            bool update_from_children(Episode &episode);
+            bool update_from_child(Episode &node, const Episode &child, std::vector<geometry_msgs::Point> &positions);
+
         };
 
     }
