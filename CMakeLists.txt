@@ -34,6 +34,7 @@ add_message_files(
     HistoricalRelevance.msg
     Info.msg
     Relevance.msg
+    StreamRegister.msg
     What.msg
     When.msg
     Where.msg

@@ -18,6 +18,7 @@ bool gather_entities  # 'true' : Use all available entity plugins to gather info
 # Use random UID or fixed one.
 bool generate_uid  # Whether to generate a random UID for the episode or not.
 uint32 uid         # This field is used instead of the automatic default uid.
-bool replace       # replace episode if it already exists (same uid).
+bool replace       # Replace episode if it already exists (same uid).
+bool is_leaf       # Whether this episode is a leaf or not.
 ---
 uint32 uid
