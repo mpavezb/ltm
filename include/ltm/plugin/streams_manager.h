@@ -3,7 +3,7 @@
 
 #include <pluginlib/class_loader.h>
 #include <ltm/plugin/stream_base.h>
-#include <ltm/parameter_server_wrapper.h>
+#include <ltm/util/parameter_server_wrapper.h>
 
 namespace ltm {
     namespace plugin {

@@ -1,4 +1,4 @@
-#include <ltm/parameter_server_wrapper.h>
+#include <ltm/util/parameter_server_wrapper.h>
 #include <ltm/server.h>
 #include <boost/scoped_ptr.hpp>
 
@@ -11,7 +11,7 @@ namespace ltm {
         ros::NodeHandle priv("~");
         _log_prefix = "[LTM]: ";
 
-        ParameterServerWrapper psw;
+        ltm::util::ParameterServerWrapper psw;
         psw.getParameter("db", _db_name, "ltm_db");
         psw.getParameter("collection", _db_collection_name, "episodes");
         psw.getParameter("host", _db_host, "localhost");

@@ -8,7 +8,7 @@ namespace ltm {
 
         template<class EntityType, class EntitySrv>
         void EntityROS<EntityType, EntitySrv>::ltm_setup(const std::string& param_ns, DBConnectionPtr db_ptr, std::string db_name) {
-            ltm::ParameterServerWrapper psw("~");
+            ltm::util::ParameterServerWrapper psw("~");
             std::string collection_name;
             std::string type;
             psw.getParameter(param_ns + "type", type, "UNKNOWN"); // TODO: use an interesting default value.

@@ -54,6 +54,6 @@ namespace ltm {
     }
 }
 
-#include <ltm/db/stream_collection_impl.hxx>
+#include <ltm/db/impl/stream_collection_impl.hxx>
 
 #endif //LTM_PLUGIN_STREAM_COLLECTION_H

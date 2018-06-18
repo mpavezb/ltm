@@ -5,7 +5,7 @@
 #include <ltm/Episode.h>
 #include <std_srvs/Empty.h>
 #include <ltm/db/entity_collection.h>
-#include <ltm/parameter_server_wrapper.h>
+#include <ltm/util/parameter_server_wrapper.h>
 
 namespace ltm {
     namespace plugin {
@@ -51,6 +51,6 @@ namespace ltm {
     }
 }
 
-#include <ltm/plugin/entity_ros_impl.hxx>
+#include <ltm/plugin/impl/entity_ros_impl.hxx>
 
 #endif //LTM_PLUGIN_ENTITY_ROS_H

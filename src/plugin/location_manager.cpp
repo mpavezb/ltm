@@ -7,7 +7,7 @@ namespace ltm {
             _plugin_loader = new pluginlib::ClassLoader<ltm::plugin::LocationBase>("ltm", "ltm::plugin::LocationBase");
 
             // ROS Parameters
-            ltm::ParameterServerWrapper psw;
+            ltm::util::ParameterServerWrapper psw;
             psw.getParameter("plugins/location/class", _plugin_class, "");
 
             // load

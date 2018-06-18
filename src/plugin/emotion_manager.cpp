@@ -7,7 +7,7 @@ namespace ltm {
             _plugin_loader = new pluginlib::ClassLoader<ltm::plugin::EmotionBase>("ltm", "ltm::plugin::EmotionBase");
 
             // ROS Parameters
-            ltm::ParameterServerWrapper psw;
+            ltm::util::ParameterServerWrapper psw;
             psw.getParameter("plugins/emotion/class", _plugin_class, "");
 
             // load

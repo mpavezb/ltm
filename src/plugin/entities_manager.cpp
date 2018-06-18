@@ -11,7 +11,7 @@ namespace ltm {
             _db_name = db_name;
 
             // Get entity plugin names from ROS Parameter server
-            ltm::ParameterServerWrapper psw;
+            ltm::util::ParameterServerWrapper psw;
             std::vector<std::string> plugin_names;
             psw.getParameter("plugins/entities/include", plugin_names, plugin_names);
 
@@ -35,7 +35,7 @@ namespace ltm {
         }
 
         bool EntitiesManager::load_plugin(std::string plugin_name) {
-            ParameterServerWrapper psw;
+            ltm::util::ParameterServerWrapper psw;
             std::string param_ns = "plugins/entities/" + plugin_name + "/";
 
             // plugin class

@@ -107,8 +107,11 @@ add_dependencies(ltm_plugins ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORT
 
 add_executable(ltm_server
     src/server.cpp
-    src/episode_collection.cpp
-    src/geometry.cpp
+    src/db/episode_collection.cpp
+    src/db/episode_metadata.cpp
+    src/db/episode_updater.cpp
+    src/util/geometry.cpp
+    src/util/util.cpp
 )
 add_dependencies(ltm_server ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(ltm_server ltm_plugins ${catkin_LIBRARIES} ${Boost_LIBRARIES})

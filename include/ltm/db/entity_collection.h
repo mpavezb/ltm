@@ -94,6 +94,6 @@ namespace ltm {
     }
 }
 
-#include <ltm/db/entity_collection_impl.hxx>
+#include <ltm/db/impl/entity_collection_impl.hxx>
 
 #endif //LTM_PLUGIN_ENTITY_COLLECTION_H

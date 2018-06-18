@@ -12,4 +12,5 @@ typedef ltm_db::Metadata::Ptr MetadataPtr;
 
 typedef boost::shared_ptr<ltm_db_mongo::MongoDatabaseConnection> DBConnectionPtr;
 
+
 #endif //LTM_DB_TYPES_H
