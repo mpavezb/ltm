@@ -24,11 +24,7 @@ namespace ltm {
         }
 
         template<class StreamType>
-        void StreamCollectionManager<StreamType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
-            _db_name = db_name;
-            _collection_name = collection_name;
-            _type = type;
-            _conn = db_ptr;
+        void StreamCollectionManager<StreamType>::ltm_resetup_db() {
             try {
                 // host, port, timeout
                 _coll = _conn->openCollectionPtr<StreamType>(_db_name, _collection_name);
@@ -43,6 +39,16 @@ namespace ltm {
                 ROS_ERROR_STREAM("Connection to DB failed for collection '" << _collection_name << "'.");
             }
             // TODO: return value and effect for this.
+        }
+
+
+        template<class StreamType>
+        void StreamCollectionManager<StreamType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
+            _db_name = db_name;
+            _collection_name = "stream:" + collection_name;
+            _type = type;
+            _conn = db_ptr;
+            this->ltm_resetup_db();
         }
 
         template<class StreamType>
@@ -129,7 +135,7 @@ namespace ltm {
             _coll->removeMessages(query);
             _registry.clear();
             // TODO: clear cache
-            ltm_setup_db(_conn, _db_name, _collection_name, _type);
+            ltm_resetup_db();
             return true;
         }
 

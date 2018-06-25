@@ -201,7 +201,6 @@ namespace ltm {
         }
 
         bool EpisodeCollectionManager::drop_db() {
-            // TODO: drop other DBs
             _conn->dropDatabase(_db_name);
             _reserved_uids.clear();
             _db_uids.clear();

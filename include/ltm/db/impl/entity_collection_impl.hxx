@@ -26,13 +26,7 @@ namespace ltm {
         }
 
         template<class EntityType>
-        void EntityCollectionManager<EntityType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
-            _db_name = db_name;
-            _collection_name = collection_name;
-            _log_collection_name = collection_name + "_log";
-            _diff_collection_name = collection_name + "_diff";
-            _type = type;
-            _conn = db_ptr;
+        void EntityCollectionManager<EntityType>::ltm_resetup_db() {
             try {
                 // host, port, timeout
                 _coll = _conn->openCollectionPtr<EntityType>(_db_name, _collection_name);
@@ -65,6 +59,17 @@ namespace ltm {
                 ROS_ERROR_STREAM("Connection to DB failed for collection '" << _collection_name << "'.");
             }
             // TODO: return value and effect for this.
+        }
+
+        template<class EntityType>
+        void EntityCollectionManager<EntityType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
+            _db_name = db_name;
+            _collection_name = "entity:" + collection_name;
+            _log_collection_name = "entity:" + collection_name + ".meta";
+            _diff_collection_name = "entity:" + collection_name + ".trail";
+            _type = type;
+            _conn = db_ptr;
+            this->ltm_resetup_db();
         }
 
         template<class EntityType>
@@ -232,7 +237,7 @@ namespace ltm {
 
         template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_drop_db() {
-            ROS_WARN_STREAM("Dropping database for '" << ltm_get_type() << "'. Collections: " << _collection_name << " and {_log, _diff}.");
+            ROS_WARN_STREAM("Dropping database for '" << ltm_get_type() << "'. Collections: " << _collection_name << " and {.meta, .trail}.");
             QueryPtr query = _coll->createQuery();
             query->appendGT("uid", -1);
             _coll->removeMessages(query);
@@ -248,7 +253,7 @@ namespace ltm {
             _registry.clear();
             _log_uids_cache.clear();
             _reserved_log_uids.clear();
-            ltm_setup_db(_conn, _db_name, _collection_name, _type);
+            ltm_resetup_db();
             return true;
         }
 

@@ -11,7 +11,7 @@ namespace ltm {
             ltm::util::ParameterServerWrapper psw("~");
             std::string collection_name;
             std::string type;
-            psw.getParameter(param_ns + "type", type, "UNKNOWN"); // TODO: use an interesting default value.
+            psw.getParameter(param_ns + "type", type, "UNKNOWN");
             psw.getParameter(param_ns + "collection", collection_name, "UNKNOWN");
 
             this->_log_prefix = "[LTM][" + type + " Plugin]: ";

@@ -79,6 +79,7 @@ namespace ltm {
 
             // ENTITY DB Methods
             void ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type);
+            void ltm_resetup_db();
             int ltm_count();
             bool ltm_has(int uid);
             bool ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr);
