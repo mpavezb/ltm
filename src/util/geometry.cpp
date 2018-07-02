@@ -35,6 +35,10 @@ namespace ltm {
             size_t n = points.size();
             size_t k = 0;
             geometry_msgs::Point p1, p2, p3;
+            if (n == 0) {
+                hull.clear();
+                return;
+            }
             if (n == 1) {
                 hull = points;
                 return;
@@ -119,6 +123,9 @@ namespace ltm {
 
             typedef boost::geometry::model::d2::point_xy<double> point_type;
             typedef boost::geometry::model::polygon<point_type> polygon_type;
+
+            // no points
+            if (points.size() == 0) return geometry_msgs::Point();
 
             // create boost polygon
             std::vector<point_type> boost_points;

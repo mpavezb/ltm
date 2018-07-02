@@ -94,7 +94,7 @@ namespace ltm {
                 if (req.replace) {
                     ROS_INFO_STREAM(_log_prefix << "[REGISTER] Removing episode (" << value << ") for replacement.");
                     _db->remove(value);
-                    _pl->unregister_episode((uint32_t)value);
+                    _pl->unregister_episode((uint32_t) value);
                 } else {
                     ROS_WARN_STREAM(_log_prefix << "[REGISTER] Attempted to register a fixed uid (" << value << "), but it is already registered.");
                     return false;
@@ -130,17 +130,18 @@ namespace ltm {
 
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
         bool replace = false;
-
         if (req.episode.type == ltm::Episode::LEAF) {
             // only collect information for LEAFs
             _pl->collect(req.episode.uid, req.episode);
-        } else {
+        } else if (req.episode.type == ltm::Episode::EPISODE) {
             // update node based on its children
             // THIS REQUIRES THE CHILDREN_IDS FIELD TO BE SET UP.
             // TODO: rework design to not require this field. It can be built automatically while adding children.
             _db->update_from_children(req.episode);
+        } else {
+            ROS_ERROR_STREAM("Unsupported episode type: " << (uint32_t) req.episode.type);
+            return false;
         }
-
 
         // insert episode
         if (_db->has(req.episode.uid)) {
