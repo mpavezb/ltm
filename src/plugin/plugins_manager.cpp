@@ -84,6 +84,23 @@ namespace ltm {
             _streams_manager->drop_db();
         }
 
+        bool PluginsManager::switch_db(const std::string &db_name) {
+            registry.clear();
+
+            ROS_WARN_STREAM("Resetting Location Manager ...");
+            _location_manager->reset();
+
+            ROS_WARN_STREAM("Resetting Emotion Manager ...");
+            _emotion_manager->reset();
+
+            ROS_WARN_STREAM("Resetting Entity Connections ...");
+            _entities_manager->switch_db(db_name);
+
+            ROS_WARN_STREAM("Resseting Stream Connections ...");
+            _streams_manager->switch_db(db_name);
+
+        }
+
         void PluginsManager::append_status(std::stringstream &status) {
             status << "Entity Plugins: \n";
             _entities_manager->append_status(status);

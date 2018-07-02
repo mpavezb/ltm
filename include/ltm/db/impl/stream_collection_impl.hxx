@@ -17,6 +17,11 @@ namespace ltm {
         }
 
         template<class StreamType>
+        std::string StreamCollectionManager<StreamType>::ltm_get_db_name() {
+            return _db_name;
+        }
+
+        template<class StreamType>
         std::string StreamCollectionManager<StreamType>::ltm_get_status() {
             std::stringstream ss;
             ss << "Stream '" << _type << "' has (" << ltm_count() << ") entries in collection '" << _collection_name << "'.";
@@ -24,7 +29,9 @@ namespace ltm {
         }
 
         template<class StreamType>
-        void StreamCollectionManager<StreamType>::ltm_resetup_db() {
+        void StreamCollectionManager<StreamType>::ltm_resetup_db(const std::string &db_name) {
+            _db_name = db_name;
+
             try {
                 // host, port, timeout
                 _coll = _conn->openCollectionPtr<StreamType>(_db_name, _collection_name);
@@ -39,16 +46,18 @@ namespace ltm {
                 ROS_ERROR_STREAM("Connection to DB failed for collection '" << _collection_name << "'.");
             }
             // TODO: return value and effect for this.
+
+            _registry.clear();
+            // TODO: clear cache
         }
 
 
         template<class StreamType>
         void StreamCollectionManager<StreamType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
-            _db_name = db_name;
             _collection_name = "stream:" + collection_name;
             _type = type;
             _conn = db_ptr;
-            this->ltm_resetup_db();
+            this->ltm_resetup_db(db_name);
         }
 
         template<class StreamType>
@@ -133,9 +142,8 @@ namespace ltm {
             QueryPtr query = _coll->createQuery();
             query->appendGT("uid", -1);
             _coll->removeMessages(query);
-            _registry.clear();
-            // TODO: clear cache
-            ltm_resetup_db();
+
+            ltm_resetup_db(_db_name);
             return true;
         }
 

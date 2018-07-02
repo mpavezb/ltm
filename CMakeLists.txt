@@ -44,9 +44,11 @@ add_message_files(
 add_service_files(
     FILES
     AddEpisode.srv
+    DropDB.srv
     GetEpisodes.srv
     QueryServer.srv
     RegisterEpisode.srv
+    SwitchDB.srv
     UpdateTree.srv
 )
 

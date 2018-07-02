@@ -62,7 +62,7 @@ namespace ltm {
             bool update_tree(int uid);
             bool update_from_children(Episode &episode);
             bool drop_db();
-
+            bool switch_db(const std::string &db_name);
         };
 
     }

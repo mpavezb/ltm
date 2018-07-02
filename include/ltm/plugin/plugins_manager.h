@@ -51,6 +51,7 @@ namespace ltm {
             void unregister_episode(uint32_t uid);
             void collect(uint32_t uid, ltm::Episode &episode);
             void drop_db();
+            bool switch_db(const std::string &db_name);
             void append_status(std::stringstream &status);
         };
     }

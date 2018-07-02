@@ -35,9 +35,10 @@ namespace ltm {
             std::string ltm_get_type();
             std::string ltm_get_collection_name();
             std::string ltm_get_status();
+            std::string ltm_get_db_name();
 
             void ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type);
-            void ltm_resetup_db();
+            void ltm_resetup_db(const std::string &db_name);
             bool ltm_register_episode(uint32_t uid);
             bool ltm_unregister_episode(uint32_t uid);
             bool ltm_is_reserved(int uid);

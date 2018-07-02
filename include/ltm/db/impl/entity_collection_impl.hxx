@@ -17,6 +17,11 @@ namespace ltm {
         }
 
         template<class EntityType>
+        std::string EntityCollectionManager<EntityType>::ltm_get_db_name() {
+            return _db_name;
+        }
+
+        template<class EntityType>
         std::string EntityCollectionManager<EntityType>::ltm_get_status() {
             std::stringstream ss;
             ss << "Entity '" << _type << "' has (" << ltm_count()
@@ -26,7 +31,9 @@ namespace ltm {
         }
 
         template<class EntityType>
-        void EntityCollectionManager<EntityType>::ltm_resetup_db() {
+        void EntityCollectionManager<EntityType>::ltm_resetup_db(const std::string &db_name) {
+            _db_name = db_name;
+
             try {
                 // host, port, timeout
                 _coll = _conn->openCollectionPtr<EntityType>(_db_name, _collection_name);
@@ -59,17 +66,20 @@ namespace ltm {
                 ROS_ERROR_STREAM("Connection to DB failed for collection '" << _collection_name << "'.");
             }
             // TODO: return value and effect for this.
+
+            _registry.clear();
+            _log_uids_cache.clear();
+            _reserved_log_uids.clear();
         }
 
         template<class EntityType>
         void EntityCollectionManager<EntityType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
-            _db_name = db_name;
             _collection_name = "entity:" + collection_name;
             _log_collection_name = "entity:" + collection_name + ".meta";
             _diff_collection_name = "entity:" + collection_name + ".trail";
             _type = type;
             _conn = db_ptr;
-            this->ltm_resetup_db();
+            this->ltm_resetup_db(db_name);
         }
 
         template<class EntityType>
@@ -250,10 +260,7 @@ namespace ltm {
             query->appendGT("log_uid", -1);
             _diff_coll->removeMessages(query_diff);
 
-            _registry.clear();
-            _log_uids_cache.clear();
-            _reserved_log_uids.clear();
-            ltm_resetup_db();
+            ltm_resetup_db(_db_name);
             return true;
         }
 

@@ -257,6 +257,14 @@ namespace ltm {
             return true;
         }
 
+        bool EpisodeCollectionManager::switch_db(const std::string &db_name) {
+            _db_name = db_name;
+            _reserved_uids.clear();
+            _db_uids.clear();
+            setup();
+            return true;
+        }
+
         bool EpisodeCollectionManager::update_tree(int uid) {
             if (!has(uid)) {
                 return false;

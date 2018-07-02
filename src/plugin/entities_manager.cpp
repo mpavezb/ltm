@@ -106,6 +106,15 @@ namespace ltm {
             }
         }
 
+        void EntitiesManager::switch_db(const std::string &db_name) {
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    (*it)->reset(db_name);
+                }
+            }
+        }
+
         void EntitiesManager::append_status(std::stringstream &status) {
             if (_use_plugins) {
                 std::vector<PluginPtr>::iterator it;

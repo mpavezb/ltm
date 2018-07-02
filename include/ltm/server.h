@@ -15,6 +15,8 @@
 #include <ltm/QueryServer.h>
 #include <ltm/RegisterEpisode.h>
 #include <ltm/UpdateTree.h>
+#include <ltm/DropDB.h>
+#include <ltm/SwitchDB.h>
 
 // LTM
 #include <ltm/db/episode_collection.h>
@@ -39,6 +41,7 @@ namespace ltm {
         // servers
         ros::ServiceServer _status_service;
         ros::ServiceServer _drop_db_service;
+        ros::ServiceServer _switch_db_service;
         ros::ServiceServer _add_episode_service;
         ros::ServiceServer _get_episodes_service;
         ros::ServiceServer _query_server_service;
@@ -83,7 +86,10 @@ namespace ltm {
         bool status_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
 
         /**/
-        bool drop_db_service(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res);
+        bool drop_db_service(ltm::DropDB::Request  &req, ltm::DropDB::Response &res);
+
+        /**/
+        bool switch_db_service(ltm::SwitchDB::Request  &req, ltm::SwitchDB::Response &res);
     };
 
 } /* namespace ltm */

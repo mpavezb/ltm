@@ -1,0 +1,8 @@
+# As this service is potentially dangerous
+# the server requires some kind of user confirmation
+#
+# Also, as we cannot depend on default values for ROS msg/srv fields
+# (they are language dependent), you must set BOTH fields
+bool i_understand_this_is_a_dangerous_operation
+bool html_is_a_real_programming_language
+---

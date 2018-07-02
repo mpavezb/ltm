@@ -58,6 +58,7 @@ namespace ltm {
             std::string ltm_get_type();
             std::string ltm_get_collection_name();
             std::string ltm_get_status();
+            std::string ltm_get_db_name();
 
             // registry methods
             bool ltm_register_episode(uint32_t uid);
@@ -77,9 +78,10 @@ namespace ltm {
             bool ltm_diff_has(int uid);
             bool ltm_diff_insert(const EntityType &diff, MetadataPtr metadata);
 
+
             // ENTITY DB Methods
             void ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type);
-            void ltm_resetup_db();
+            void ltm_resetup_db(const std::string &db_name);
             int ltm_count();
             bool ltm_has(int uid);
             bool ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr);

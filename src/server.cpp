@@ -33,6 +33,7 @@ namespace ltm {
         _update_tree_service = priv.advertiseService("update_tree", &Server::update_tree_service, this);
         _status_service = priv.advertiseService("status", &Server::status_service, this);
         _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
+        _switch_db_service = priv.advertiseService("switch_db", &Server::switch_db_service, this);
 
         ROS_INFO_STREAM(_log_prefix << "Server is up and running.");
         show_status();
@@ -93,7 +94,7 @@ namespace ltm {
                 if (req.replace) {
                     ROS_INFO_STREAM(_log_prefix << "[REGISTER] Removing episode (" << value << ") for replacement.");
                     _db->remove(value);
-                    _pl->unregister_episode(value);
+                    _pl->unregister_episode((uint32_t)value);
                 } else {
                     ROS_WARN_STREAM(_log_prefix << "[REGISTER] Attempted to register a fixed uid (" << value << "), but it is already registered.");
                     return false;
@@ -169,13 +170,27 @@ namespace ltm {
         return true;
     }
 
-    bool Server::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+    bool Server::drop_db_service(ltm::DropDB::Request &req, ltm::DropDB::Response &res) {
         // TODO: this requires a synchronization mechanism
+        if (!req.i_understand_this_is_a_dangerous_operation ||
+            req.html_is_a_real_programming_language) {
+            ROS_WARN_STREAM(_log_prefix << "Attempted to drop the database with unmet requirements!. Please read "
+                                           << "the ltm/DropDB.srv description. Bye!.");
+            return false;
+        }
+
         ROS_WARN_STREAM(_log_prefix << "DELETE: Deleting all entries from collection '" << _db_collection_name << "'");
         _pl->drop_db();
         _db->drop_db();
         show_status();
         return true;
+    }
+
+    bool Server::switch_db_service(ltm::SwitchDB::Request &req, ltm::SwitchDB::Response &res) {
+        ROS_WARN_STREAM(_log_prefix << "Switching LTM database from '" << _db_name << "' to '" << req.db_name << "'");
+        _db_name = req.db_name;
+        _pl->switch_db(req.db_name);
+        _db->switch_db(req.db_name);
     }
 }
 

@@ -33,6 +33,7 @@ namespace ltm {
             void register_episode(uint32_t uid);
             void unregister_episode(uint32_t uid);
             void drop_db();
+            void switch_db(const std::string &db_name);
             void append_status(std::stringstream &status);
         };
     }
