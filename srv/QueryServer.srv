@@ -1,0 +1,12 @@
+# target LTM data: episode, entity, stream
+string target
+
+# semantic type
+# only valid when 'target' in [entity, stream]
+string semantic_type
+
+# json query based on MongoDB style
+string json
+---
+# matching uids
+uint32[] uids

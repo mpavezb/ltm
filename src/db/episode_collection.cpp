@@ -84,6 +84,55 @@ namespace ltm {
             return true;
         }
 
+        bool EpisodeCollectionManager::query(const std::string &json, std::vector<uint32_t> &uids) {
+            QueryPtr query = _coll->createQuery();
+            std::vector<EpisodeWithMetadataPtr> result;
+            uids.clear();
+
+            // generate query and collect documents.
+            try {
+                /*
+                // append queries
+                query->append("info_source", std::string("smach"));
+                query->append("children_tags", std::string("analyze_crowd"));
+                query->append("children_tags", std::string("look_for_crowd"));
+                query->append("children_ids", 1679966153);
+
+                std::vector<int> emo_array;
+                emo_array.push_back(0);
+                emo_array.push_back(3);
+                emo_array.push_back(2);
+                query->appendIN("relevance_emotional_emotion", emo_array);
+
+                std::vector<std::string> location_array;
+                location_array.push_back("kitchen");
+                location_array.push_back("hallway");
+                query->appendIN("where_location", location_array);
+
+                query->append("where_frame_id", std::string("/map"));
+                query->append("where_map_name", "fake_map");
+                query->appendGT("where_position_y", 0.0);
+                query->appendGTE("relevance_emotional_value", 0.194);
+                query->appendLTE("relevance_emotional_value", 0.196);
+                query->appendGT("relevance_emotional_emotion", 4);
+                query->append("parent_id", 291269874);
+                query->append("uid", 124082359);
+                */
+                query->append(json);
+                result = _coll->queryList(query, true);
+            } catch (const ltm_db::NoMatchingMessageException &exception) {
+                return false;
+            }
+
+            // fill uids
+            std::vector<EpisodeWithMetadataPtr>::const_iterator it;
+            for (it = result.begin(); it != result.end(); ++it) {
+                uids.push_back((uint32_t)(*it)->lookupInt("uid"));
+            }
+            ROS_INFO_STREAM("Found (" << uids.size() << ") uids AND (" << result.size() << ") matches.");
+            return true;
+        }
+
         bool EpisodeCollectionManager::get(int uid, EpisodeWithMetadataPtr &episode_ptr) {
             QueryPtr query = _coll->createQuery();
             query->append("uid", uid);

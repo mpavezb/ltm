@@ -27,7 +27,8 @@ namespace ltm {
 
         // Announce services
         _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
-        _get_episode_service = priv.advertiseService("get_episode", &Server::get_episode_service, this);
+        _get_episodes_service = priv.advertiseService("get_episodes", &Server::get_episodes_service, this);
+        _query_server_service = priv.advertiseService("query", &Server::query_server_service, this);
         _register_episode_service = priv.advertiseService("register_episode", &Server::register_episode_service, this);
         _update_tree_service = priv.advertiseService("update_tree", &Server::update_tree_service, this);
         _status_service = priv.advertiseService("status", &Server::status_service, this);
@@ -50,17 +51,34 @@ namespace ltm {
     // ROS Services
     // ==========================================================
 
-    bool Server::get_episode_service(ltm::GetEpisode::Request &req, ltm::GetEpisode::Response &res) {
-        ROS_INFO_STREAM(_log_prefix << "GET: Retrieving episode with uid: " << req.uid);
-        EpisodeWithMetadataPtr ep_ptr;
-        if (!_db->get(req.uid, ep_ptr)) {
-            ROS_ERROR_STREAM(_log_prefix << "GET: Episode with uid '" << req.uid << "' not found.");
-            res.succeeded = (uint8_t) false;
+    bool Server::get_episodes_service(ltm::GetEpisodes::Request &req, ltm::GetEpisodes::Response &res) {
+//        ROS_INFO_STREAM(_log_prefix << "GET: Retrieving episode with uid: " << req.uids);
+//        EpisodeWithMetadataPtr ep_ptr;
+//        if (!_db->get(req.uid, ep_ptr)) {
+//            ROS_ERROR_STREAM(_log_prefix << "GET: Episode with uid '" << req.uid << "' not found.");
+//            res.succeeded = (uint8_t) false;
+//            return true;
+//        }
+//        res.episodes = *ep_ptr;
+//        res.succeeded = (uint8_t) true;
+//        return true;
+    }
+
+    bool Server::query_server_service(ltm::QueryServer::Request &req, ltm::QueryServer::Response &res) {
+        if (req.target == "episode") {
+            _db->query(req.json, res.uids);
+            return true;
+        } else if (req.target == "entity") {
+            //req.semantic_type
+            //req.json
+            return true;
+        } else if (req.target == "stream") {
+            //req.semantic_type
+            //req.json
             return true;
         }
-        res.episode = *ep_ptr;
-        res.succeeded = (uint8_t) true;
-        return true;
+        ROS_WARN_STREAM("Invalid 'target' field for 'query' service. Got: '" << req.target << "'");
+        return false;
     }
 
     bool Server::register_episode_service(ltm::RegisterEpisode::Request &req, ltm::RegisterEpisode::Response &res) {

@@ -44,7 +44,8 @@ add_message_files(
 add_service_files(
     FILES
     AddEpisode.srv
-    GetEpisode.srv
+    GetEpisodes.srv
+    QueryServer.srv
     RegisterEpisode.srv
     UpdateTree.srv
 )

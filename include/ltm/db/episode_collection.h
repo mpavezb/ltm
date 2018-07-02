@@ -49,6 +49,7 @@ namespace ltm {
 
             // CRUD API
             bool insert(const Episode &episode);
+            bool query(const std::string& json, std::vector<uint32_t> &uids);
             bool get(int uid, EpisodeWithMetadataPtr &episode_ptr);
             bool update(const Episode &episode);
             bool remove(int uid);

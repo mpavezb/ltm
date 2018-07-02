@@ -1,0 +1,5 @@
+# target uids
+uint32[] uids
+---
+bool succeeded
+ltm/Episode[] episodes

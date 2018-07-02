@@ -11,7 +11,8 @@
 
 // ROS LTM services
 #include <ltm/AddEpisode.h>
-#include <ltm/GetEpisode.h>
+#include <ltm/GetEpisodes.h>
+#include <ltm/QueryServer.h>
 #include <ltm/RegisterEpisode.h>
 #include <ltm/UpdateTree.h>
 
@@ -39,7 +40,8 @@ namespace ltm {
         ros::ServiceServer _status_service;
         ros::ServiceServer _drop_db_service;
         ros::ServiceServer _add_episode_service;
-        ros::ServiceServer _get_episode_service;
+        ros::ServiceServer _get_episodes_service;
+        ros::ServiceServer _query_server_service;
         ros::ServiceServer _register_episode_service;
         ros::ServiceServer _update_tree_service;
 
@@ -66,7 +68,10 @@ namespace ltm {
         bool add_episode_service(ltm::AddEpisode::Request  &req, ltm::AddEpisode::Response &res);
 
         /**/
-        bool get_episode_service(ltm::GetEpisode::Request  &req, ltm::GetEpisode::Response &res);
+        bool get_episodes_service(ltm::GetEpisodes::Request  &req, ltm::GetEpisodes::Response &res);
+
+        /**/
+        bool query_server_service(ltm::QueryServer::Request  &req, ltm::QueryServer::Response &res);
 
         /**/
         bool register_episode_service(ltm::RegisterEpisode::Request  &req, ltm::RegisterEpisode::Response &res);

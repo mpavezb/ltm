@@ -14,25 +14,25 @@ namespace ltm {
         }
 
         void EpisodeMetadataBuilder::make_meta_info(const Info &node, MetadataPtr meta) {
-            meta->append("info.source", node.source);
+            meta->append("info_source", node.source);
         }
 
         void EpisodeMetadataBuilder::make_meta_when(const When &node, MetadataPtr meta) {
             double start = node.start.sec + node.start.nsec * pow10(-9);
             double end = node.end.sec + node.end.nsec * pow10(-9);
-            meta->append("when.start", start);
-            meta->append("when.end", end);
+            meta->append("when_start", start);
+            meta->append("when_end", end);
         }
 
         void EpisodeMetadataBuilder::make_meta_where(const Where &node, MetadataPtr meta) {
-            meta->append("where.frame_id", node.frame_id);
-            meta->append("where.map_name", node.map_name);
-            meta->append("where.position_x", node.position.x);
-            meta->append("where.position_y", node.position.y);
-            meta->append("where.location", node.location);
-            meta->append("where.area", node.area);
-            meta->append("where.children_locations", node.children_locations);
-            meta->append("where.children_areas", node.children_areas);
+            meta->append("where_frame_id", node.frame_id);
+            meta->append("where_map_name", node.map_name);
+            meta->append("where_position_x", node.position.x);
+            meta->append("where_position_y", node.position.y);
+            meta->append("where_location", node.location);
+            meta->append("where_area", node.area);
+            meta->append("where_children_locations", node.children_locations);
+            meta->append("where_children_areas", node.children_areas);
         }
 
         void EpisodeMetadataBuilder::make_meta_what(const What &node, MetadataPtr meta) {
@@ -44,8 +44,8 @@ namespace ltm {
                 stream_types.push_back(s_it->type);
                 stream_uids.push_back(s_it->uid);
             }
-            meta->append("what.stream.types", stream_types);
-            meta->append("what.stream.uids", stream_uids);
+            meta->append("what_stream_types", stream_types);
+            meta->append("what_stream_uids", stream_uids);
 
             // ENTITIES
             std::vector<std::string> entity_types;
@@ -55,8 +55,8 @@ namespace ltm {
                 entity_types.push_back(e_it->type);
                 entity_uids.push_back(e_it->uid);
             }
-            meta->append("what.entities.types", entity_types);
-            meta->append("what.entities.uids", entity_uids);
+            meta->append("what_entities_types", entity_types);
+            meta->append("what_entities_uids", entity_uids);
         }
 
         void EpisodeMetadataBuilder::make_meta_relevance(const Relevance &node, MetadataPtr meta) {
@@ -65,7 +65,7 @@ namespace ltm {
         }
 
         void EpisodeMetadataBuilder::make_meta_relevance_historical(const HistoricalRelevance &node, MetadataPtr meta) {
-            meta->append("relevance.historical.value", node.value);
+            meta->append("relevance_historical_value", node.value);
 
             char buff[16];
             snprintf(buff, sizeof(buff), "%04u/%02u/%02u", node.last_update.year, node.last_update.month,
@@ -74,15 +74,15 @@ namespace ltm {
             snprintf(buff, sizeof(buff), "%04u/%02u/%02u", node.next_update.year, node.next_update.month,
                      node.next_update.day);
             std::string next_update = buff;
-            meta->append("relevance.historical.last_update", last_update);
-            meta->append("relevance.historical.next_update", next_update);
+            meta->append("relevance_historical_last_update", last_update);
+            meta->append("relevance_historical_next_update", next_update);
         }
 
         void EpisodeMetadataBuilder::make_meta_relevance_emotional(const EmotionalRelevance &node, MetadataPtr meta) {
-            meta->append("relevance.emotional.emotion", node.emotion);
-            meta->append("relevance.emotional.value", node.value);
-            meta->append("relevance.emotional.children_emotions", node.children_emotions);
-            meta->append("relevance.emotional.children_values", node.children_values);
+            meta->append("relevance_emotional_emotion", node.emotion);
+            meta->append("relevance_emotional_value", node.value);
+            meta->append("relevance_emotional_children_emotions", node.children_emotions);
+            meta->append("relevance_emotional_children_values", node.children_values);
         }
 
         MetadataPtr EpisodeMetadataBuilder::make_metadata(const Episode &episode, EpisodeCollectionPtr &coll) {
