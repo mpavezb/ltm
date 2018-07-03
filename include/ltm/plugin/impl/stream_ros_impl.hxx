@@ -46,7 +46,6 @@ namespace ltm {
 
         template<class StreamType, class StreamSrv>
         bool StreamROS<StreamType, StreamSrv>::add_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Inserting stream (" << req.msg.meta.uid << ") to collection '" << this->ltm_get_collection_name() << "'");
             this->ltm_insert(req.msg, this->make_metadata(req.msg));
             return true;
         }
