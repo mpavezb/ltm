@@ -26,14 +26,14 @@ namespace ltm {
         _pl.reset(new ltm::plugin::PluginsManager(_db->_conn, _db_name));
 
         // Announce services
-        _add_episode_service = priv.advertiseService("add_episode", &Server::add_episode_service, this);
-        _get_episodes_service = priv.advertiseService("get_episodes", &Server::get_episodes_service, this);
-        _query_server_service = priv.advertiseService("query", &Server::query_server_service, this);
-        _register_episode_service = priv.advertiseService("register_episode", &Server::register_episode_service, this);
-        _update_tree_service = priv.advertiseService("update_tree", &Server::update_tree_service, this);
-        _status_service = priv.advertiseService("status", &Server::status_service, this);
-        _drop_db_service = priv.advertiseService("drop_db", &Server::drop_db_service, this);
-        _switch_db_service = priv.advertiseService("switch_db", &Server::switch_db_service, this);
+        _add_episode_service = priv.advertiseService("episode/add", &Server::add_episode_service, this);
+        _get_episodes_service = priv.advertiseService("episode/get", &Server::get_episodes_service, this);
+        _register_episode_service = priv.advertiseService("episode/register", &Server::register_episode_service, this);
+        _update_tree_service = priv.advertiseService("episode/update_tree", &Server::update_tree_service, this);
+        _status_service = priv.advertiseService("db/status", &Server::status_service, this);
+        _drop_db_service = priv.advertiseService("db/drop", &Server::drop_db_service, this);
+        _switch_db_service = priv.advertiseService("db/switch", &Server::switch_db_service, this);
+        _query_server_service = priv.advertiseService("db/query", &Server::query_server_service, this);
 
         ROS_INFO_STREAM(_log_prefix << "Server is up and running.");
         show_status();
