@@ -51,6 +51,9 @@ namespace ltm {
             MetadataPtr ltm_create_metadata();
             bool ltm_update(uint32_t uid, const StreamType &stream);
 
+            // Must be provided by the user
+            virtual MetadataPtr make_metadata(const StreamType &stream) = 0;
+
         };
 
     }

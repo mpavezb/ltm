@@ -46,13 +46,14 @@ namespace ltm {
 
         template<class StreamType, class StreamSrv>
         bool StreamROS<StreamType, StreamSrv>::add_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-
+            ROS_INFO_STREAM(this->_log_prefix << "Inserting stream (" << req.msg.uid << ") to collection '" << this->ltm_get_collection_name() << "'");
+            this->ltm_insert(req.msg, this->make_metadata(req.msg));
+            return true;
         }
 
         template<class StreamType, class StreamSrv>
         bool StreamROS<StreamType, StreamSrv>::get_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Retrieving stream (" << req.uid << ") from collection '"
-                                              << this->ltm_get_collection_name() << "'");
+            ROS_INFO_STREAM(this->_log_prefix << "Retrieving stream (" << req.uid << ") from collection '" << this->ltm_get_collection_name() << "'");
             StreamWithMetadataPtr stream_ptr;
             if (!this->ltm_get(req.uid, stream_ptr)) {
                 ROS_ERROR_STREAM(this->_log_prefix << "Stream with uid '" << req.uid << "' not found.");
