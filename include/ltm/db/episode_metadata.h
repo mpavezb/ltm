@@ -12,6 +12,8 @@ namespace ltm {
 
         class EpisodeMetadataBuilder {
         private:
+            EpisodeCollectionPtr _coll;
+            MetadataPtr create_metadata(bool root=false);
             void make_meta_episode(const Episode &node, MetadataPtr meta);
             void make_meta_info(const Info &node, MetadataPtr meta);
             void make_meta_when(const When &node, MetadataPtr meta);
@@ -22,7 +24,8 @@ namespace ltm {
             void make_meta_relevance_emotional(const EmotionalRelevance &node, MetadataPtr meta);
 
         public:
-            MetadataPtr make_metadata(const Episode &episode, EpisodeCollectionPtr &coll);
+            MetadataPtr make_metadata(const Episode &episode);
+            void setup(EpisodeCollectionPtr coll);
         };
     }
 }
