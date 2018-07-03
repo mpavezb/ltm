@@ -34,6 +34,7 @@ add_message_files(
     Episode.msg
     HistoricalRelevance.msg
     Info.msg
+    QueryResult.msg
     Relevance.msg
     StreamMetadata.msg
     StreamRegister.msg

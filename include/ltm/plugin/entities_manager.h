@@ -4,6 +4,7 @@
 #include <pluginlib/class_loader.h>
 #include <ltm/plugin/entity_base.h>
 #include <ltm/util/parameter_server_wrapper.h>
+#include <ltm/QueryServer.h>
 
 namespace ltm {
     namespace plugin {
@@ -35,6 +36,7 @@ namespace ltm {
             void drop_db();
             void switch_db(const std::string &db_name);
             void append_status(std::stringstream &status);
+            void query(std::string type, const std::string &json, ltm::QueryServer::Response &res);
         };
     }
 }

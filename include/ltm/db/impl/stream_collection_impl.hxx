@@ -51,7 +51,6 @@ namespace ltm {
             // TODO: clear cache
         }
 
-
         template<class StreamType>
         void StreamCollectionManager<StreamType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
             _collection_name = "stream:" + collection_name;
@@ -158,6 +157,34 @@ namespace ltm {
                 stream_ptr.reset();
                 return false;
             }
+            return true;
+        }
+
+        template<class StreamType>
+        bool StreamCollectionManager<StreamType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res) {
+            QueryPtr query = _coll->createQuery();
+            std::vector<StreamWithMetadataPtr> result;
+            res.episodes.clear();
+            res.streams.clear();
+            res.entities.clear();
+
+            // generate query and collect documents.
+            try {
+                query->append(json);
+                result = _coll->queryList(query, true);
+            } catch (const ltm_db::NoMatchingMessageException &exception) {
+                return false;
+            } catch (const mongo::exception &ex) {
+                ROS_ERROR_STREAM("Error while quering MongoDB for '" << _type << "' streams. " << ex.what());
+            }
+
+            // fill uids
+            typename std::vector<StreamWithMetadataPtr>::const_iterator it;
+            for (it = result.begin(); it != result.end(); ++it) {
+                // TODO: FIX ME
+                res.episodes.push_back((uint32_t)(*it)->lookupInt("uid"));
+            }
+            ROS_INFO_STREAM("Found (" << result.size() << ") matches.");
             return true;
         }
 

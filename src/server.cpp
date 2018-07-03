@@ -67,15 +67,13 @@ namespace ltm {
 
     bool Server::query_server_service(ltm::QueryServer::Request &req, ltm::QueryServer::Response &res) {
         if (req.target == "episode") {
-            _db->query(req.json, res.uids);
+            _db->query(req.json, res);
             return true;
         } else if (req.target == "entity") {
-            //req.semantic_type
-            //req.json
+            _pl->query_entity(req.semantic_type, req.json, res);
             return true;
         } else if (req.target == "stream") {
-            //req.semantic_type
-            //req.json
+            _pl->query_stream(req.semantic_type, req.json, res);
             return true;
         }
         ROS_WARN_STREAM("Invalid 'target' field for 'query' service. Got: '" << req.target << "'");

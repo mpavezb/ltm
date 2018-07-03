@@ -7,6 +7,7 @@
 
 #include <ltm/db/types.h>
 #include <ltm/Episode.h>
+#include <ltm/QueryServer.h>
 #include <ltm/db/episode_metadata.h>
 #include <ltm/db/episode_updater.h>
 
@@ -49,7 +50,7 @@ namespace ltm {
 
             // CRUD API
             bool insert(const Episode &episode);
-            bool query(const std::string& json, std::vector<uint32_t> &uids);
+            bool query(const std::string& json, ltm::QueryServer::Response &res);
             bool get(int uid, EpisodeWithMetadataPtr &episode_ptr);
             bool update(const Episode &episode);
             bool remove(int uid);

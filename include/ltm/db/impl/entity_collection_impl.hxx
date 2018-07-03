@@ -294,6 +294,34 @@ namespace ltm {
         }
 
         template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res) {
+            QueryPtr query = _coll->createQuery();
+            std::vector<EntityWithMetadataPtr> result;
+            res.episodes.clear();
+            res.streams.clear();
+            res.entities.clear();
+
+            // generate query and collect documents.
+            try {
+                query->append(json);
+                result = _coll->queryList(query, true);
+            } catch (const ltm_db::NoMatchingMessageException &exception) {
+                return false;
+            } catch (const mongo::exception &ex) {
+                ROS_ERROR_STREAM("Error while quering MongoDB for '" << _type << "' entities. " << ex.what());
+            }
+
+            // fill uids
+            typename std::vector<EntityWithMetadataPtr>::const_iterator it;
+            for (it = result.begin(); it != result.end(); ++it) {
+                // TODO: FIX ME
+                res.episodes.push_back((uint32_t)(*it)->lookupInt("uid"));
+            }
+            ROS_INFO_STREAM("Found (" << result.size() << ") matches.");
+            return true;
+        }
+
+        template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_insert(const EntityType &entity, MetadataPtr metadata) {
             _coll->insert(entity, metadata);
             // todo: insert into cache

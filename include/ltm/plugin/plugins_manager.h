@@ -1,6 +1,7 @@
 #ifndef LTM_PLUGINS_MANAGER_H
 #define LTM_PLUGINS_MANAGER_H
 
+#include <ltm/QueryServer.h>
 #include <ltm/plugin/location_manager.h>
 #include <ltm/plugin/emotion_manager.h>
 #include <ltm/plugin/streams_manager.h>
@@ -53,6 +54,8 @@ namespace ltm {
             void drop_db();
             bool switch_db(const std::string &db_name);
             void append_status(std::stringstream &status);
+            void query_stream(std::string type, const std::string &json, ltm::QueryServer::Response &res);
+            void query_entity(std::string type, const std::string &json, ltm::QueryServer::Response &res);
         };
     }
 }

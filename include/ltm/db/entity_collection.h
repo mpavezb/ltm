@@ -5,6 +5,7 @@
 #include <ltm/db/types.h>
 #include <ltm/Episode.h>
 #include <ltm/EntityLog.h>
+#include <ltm/QueryServer.h>
 
 // get random uid
 #include <time.h>
@@ -85,11 +86,12 @@ namespace ltm {
             int ltm_count();
             bool ltm_has(int uid);
             bool ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr);
-
-            bool ltm_remove(uint32_t uid);
-            bool ltm_drop_db();
-
             bool ltm_insert(const EntityType &entity, MetadataPtr metadata);
+            bool ltm_query(const std::string& json, ltm::QueryServer::Response &res);
+            bool ltm_remove(uint32_t uid);
+
+
+            bool ltm_drop_db();
             MetadataPtr ltm_create_metadata();
             bool ltm_update(uint32_t uid, const EntityType &entity, MetadataPtr metadata);
         };

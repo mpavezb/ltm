@@ -131,5 +131,18 @@ namespace ltm {
             }
         }
 
+        void StreamsManager::query(std::string type, const std::string &json, ltm::QueryServer::Response &res) {
+            if (_use_plugins) {
+                std::vector<PluginPtr>::iterator it;
+                for (it = _plugins.begin(); it != _plugins.end(); ++it) {
+                    if ((*it)->get_type() == type) {
+                        (*it)->query(json, res);
+                        return;
+                    }
+                }
+            }
+            ROS_WARN_STREAM("Query: Stream type '" << type << "' not found.");
+        }
+
     }
 }

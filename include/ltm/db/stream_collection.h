@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <ltm/db/types.h>
 #include <ltm/Episode.h>
+#include <ltm/QueryServer.h>
 
 namespace ltm {
     namespace db {
@@ -48,6 +49,7 @@ namespace ltm {
             bool ltm_drop_db();
             bool ltm_get(uint32_t uid, StreamWithMetadataPtr &stream_ptr);
             bool ltm_insert(const StreamType &stream, MetadataPtr metadata);
+            bool ltm_query(const std::string& json, ltm::QueryServer::Response &res);
             MetadataPtr ltm_create_metadata();
             bool ltm_update(uint32_t uid, const StreamType &stream);
 

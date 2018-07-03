@@ -107,5 +107,14 @@ namespace ltm {
             status << "Stream Plugins: \n";
             _streams_manager->append_status(status);
         }
+
+        void PluginsManager::query_stream(std::string type, const std::string &json, ltm::QueryServer::Response &res) {
+            _streams_manager->query(type, json, res);
+        }
+
+        void PluginsManager::query_entity(std::string type, const std::string &json, ltm::QueryServer::Response &res) {
+            _entities_manager->query(type, json, res);
+        }
+
     }
 }

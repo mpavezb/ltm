@@ -9,4 +9,6 @@ string semantic_type
 string json
 ---
 # matching uids
-uint32[] uids
+uint32[] episodes
+ltm/QueryResult[] streams
+ltm/QueryResult[] entities
