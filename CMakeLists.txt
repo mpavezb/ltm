@@ -29,11 +29,13 @@ add_message_files(
     Date.msg
     EmotionalRelevance.msg
     EntityLog.msg
+    EntityMetadata.msg
     EntityRegister.msg
     Episode.msg
     HistoricalRelevance.msg
     Info.msg
     Relevance.msg
+    StreamMetadata.msg
     StreamRegister.msg
     What.msg
     When.msg

@@ -165,7 +165,7 @@ namespace ltm {
         bool StreamCollectionManager<StreamType>::ltm_insert(const StreamType &stream, MetadataPtr metadata) {
             _coll->insert(stream, metadata);
             // todo: insert into cache
-            ROS_INFO_STREAM(_log_prefix << "Inserting stream (" << stream.uid << ") into collection "
+            ROS_INFO_STREAM(_log_prefix << "Inserting stream (" << stream.meta.uid << ") into collection "
                                         << "'" << _collection_name << "'. (" << ltm_count() << ") entries."
             );
             return true;

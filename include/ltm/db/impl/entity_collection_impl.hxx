@@ -297,7 +297,7 @@ namespace ltm {
         bool EntityCollectionManager<EntityType>::ltm_insert(const EntityType &entity, MetadataPtr metadata) {
             _coll->insert(entity, metadata);
             // todo: insert into cache
-            ROS_INFO_STREAM(_log_prefix << "Inserting entity (" << entity.uid << ") into collection "
+            ROS_INFO_STREAM(_log_prefix << "Inserting entity (" << entity.meta.uid << ") into collection "
                                         << "'" << _collection_name << "'. (" << ltm_count() << ") entries."
             );
             return true;
@@ -318,7 +318,7 @@ namespace ltm {
         bool EntityCollectionManager<EntityType>::ltm_diff_insert(const EntityType &diff, MetadataPtr metadata) {
             _diff_coll->insert(diff, metadata);
             // todo: insert into cache
-            ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG DIFF (" << diff.log_uid << ") for entity (" << diff.uid
+            ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG DIFF (" << diff.meta.log_uid << ") for entity (" << diff.meta.uid
                                         << ") into collection " << "'" << _diff_collection_name
                                         << "'. LOG DIFF has (" << ltm_diff_count() << ") entries."
             );
@@ -338,7 +338,7 @@ namespace ltm {
             ltm_remove(uid);
             _coll->insert(entity, metadata);
             // todo: insert into cache
-            ROS_INFO_STREAM(_log_prefix << "Updating entity (" << entity.uid << ") from collection "
+            ROS_INFO_STREAM(_log_prefix << "Updating entity (" << entity.meta.uid << ") from collection "
                                         << "'" << _collection_name << "'. (" << ltm_count() << ") entries."
             );
             return true;
