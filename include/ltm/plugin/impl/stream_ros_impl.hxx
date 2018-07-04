@@ -2,6 +2,7 @@
 #define LTM_PLUGIN_STREAM_ROS_IMPL_HXX
 
 #include <ltm/plugin/stream_ros.h>
+#include <ltm/util/util.h>
 
 namespace ltm {
     namespace plugin {
@@ -46,29 +47,45 @@ namespace ltm {
 
         template<class StreamType, class StreamSrv>
         bool StreamROS<StreamType, StreamSrv>::add_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-            this->ltm_insert(req.msg, this->make_metadata(req.msg));
+            typename std::vector<StreamType>::const_iterator it;
+            for (it = req.msgs.begin(); it != req.msgs.end(); ++it) {
+                this->ltm_insert(*it, this->make_metadata(*it));
+            }
             return true;
         }
 
         template<class StreamType, class StreamSrv>
         bool StreamROS<StreamType, StreamSrv>::get_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Retrieving stream (" << req.uid << ") from collection '" << this->ltm_get_collection_name() << "'");
-            StreamWithMetadataPtr stream_ptr;
-            if (!this->ltm_get(req.uid, stream_ptr)) {
-                ROS_ERROR_STREAM(this->_log_prefix << "Stream with uid '" << req.uid << "' not found.");
-                res.succeeded = (uint8_t) false;
-                return true;
+            ROS_INFO_STREAM(this->_log_prefix << "Retrieving streams from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
+            res.msgs.clear();
+
+            std::vector<uint32_t> visited, not_found;
+            std::vector<uint32_t>::const_iterator it;
+            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+                // do not seek repeated msgs
+                if (visited.end() != std::find(visited.begin(), visited.end(), *it)) continue;
+                visited.push_back(*it);
+
+                StreamWithMetadataPtr stream_ptr;
+                if (!this->ltm_get(*it, stream_ptr)) {
+                    not_found.push_back(*it);
+                    continue;
+                }
+                res.msgs.push_back(*stream_ptr);
             }
-            res.msg = *stream_ptr;
-            res.succeeded = (uint8_t) true;
+            ROS_WARN_STREAM_COND(not_found.size() > 0, this->_log_prefix
+                    << "GET: The following requested streams were not found: " << ltm::util::vector_to_str(not_found));
             return true;
         }
 
         template<class StreamType, class StreamSrv>
         bool StreamROS<StreamType, StreamSrv>::delete_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Removing (" << req.uid << ") from collection '" << this->ltm_get_collection_name() << "'");
-            res.succeeded = (uint8_t) this->ltm_remove(req.uid);
-            return res.succeeded;
+            ROS_INFO_STREAM(this->_log_prefix << "Deleting streams from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
+            std::vector<uint32_t>::const_iterator it;
+            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+                this->ltm_remove(*it);
+            }
+            return true;
         }
     }
 }

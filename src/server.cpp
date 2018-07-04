@@ -1,4 +1,5 @@
 #include <ltm/util/parameter_server_wrapper.h>
+#include <ltm/util/util.h>
 #include <ltm/server.h>
 #include <boost/scoped_ptr.hpp>
 
@@ -57,16 +58,26 @@ namespace ltm {
     // ==========================================================
 
     bool Server::get_episodes_service(ltm::GetEpisodes::Request &req, ltm::GetEpisodes::Response &res) {
-//        ROS_INFO_STREAM(_log_prefix << "GET: Retrieving episode with uid: " << req.uids);
-//        EpisodeWithMetadataPtr ep_ptr;
-//        if (!_db->get(req.uid, ep_ptr)) {
-//            ROS_ERROR_STREAM(_log_prefix << "GET: Episode with uid '" << req.uid << "' not found.");
-//            res.succeeded = (uint8_t) false;
-//            return true;
-//        }
-//        res.episodes = *ep_ptr;
-//        res.succeeded = (uint8_t) true;
-//        return true;
+        ROS_INFO_STREAM(_log_prefix << "GET: Retrieving episodes with uids: " << ltm::util::vector_to_str(req.uids));
+        res.not_found.clear();
+        res.episodes.clear();
+        std::vector<uint32_t> visited;
+        std::vector<uint32_t>::const_iterator it;
+        for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+            // do not seek repeated episodes
+            if (visited.end() != std::find(visited.begin(), visited.end(), *it)) continue;
+            visited.push_back(*it);
+
+            EpisodeWithMetadataPtr ep_ptr;
+            if (!_db->get(*it, ep_ptr)) {
+                res.not_found.push_back(*it);
+                continue;
+            }
+            res.episodes.push_back(*ep_ptr);
+        }
+        ROS_WARN_STREAM_COND(res.not_found.size() > 0, _log_prefix
+                << "GET: The following requested episodes were not found: " << ltm::util::vector_to_str(res.not_found));
+        return true;
     }
 
     bool Server::query_server_service(ltm::QueryServer::Request &req, ltm::QueryServer::Response &res) {

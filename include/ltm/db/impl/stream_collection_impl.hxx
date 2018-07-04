@@ -197,7 +197,6 @@ namespace ltm {
 
         template<class StreamType>
         bool StreamCollectionManager<StreamType>::ltm_insert(const StreamType &stream, MetadataPtr metadata) {
-
             // add common metadata for streams
             metadata->append("uid", (int) stream.meta.uid);
             metadata->append("episode_uid", (int) stream.meta.episode);
@@ -206,6 +205,7 @@ namespace ltm {
             metadata->append("start", _start);
             metadata->append("end", _end);
 
+            // insert
             _coll->insert(stream, metadata);
             // todo: insert into cache
             ROS_INFO_STREAM(_log_prefix << "Inserting stream (" << stream.meta.uid << ") into collection "

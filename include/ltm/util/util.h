@@ -5,7 +5,7 @@
 #include <vector>
 #include <set>
 #include <string>
-#include <iostream>
+#include <sstream>
 #include <algorithm>
 
 namespace ltm {
@@ -16,6 +16,10 @@ namespace ltm {
         void vector_merge(std::vector<std::string> &result, const std::vector<std::string> &source);
 
         std::string vector_to_str(const std::vector<std::string> &array);
+
+        std::string vector_to_str(const std::vector<int> &array);
+
+        std::string vector_to_str(const std::vector<uint32_t> &array);
 
     }
 }
