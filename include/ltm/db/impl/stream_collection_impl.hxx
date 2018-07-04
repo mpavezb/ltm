@@ -179,17 +179,33 @@ namespace ltm {
             }
 
             // fill uids
+            QueryResult qr;
+            qr.type = this->ltm_get_type();
             typename std::vector<StreamWithMetadataPtr>::const_iterator it;
             for (it = result.begin(); it != result.end(); ++it) {
-                // TODO: FIX ME
-                res.episodes.push_back((uint32_t)(*it)->lookupInt("uid"));
+                uint32_t uid = (uint32_t) (*it)->lookupInt("uid");
+                uint32_t episode_uid = (uint32_t) (*it)->lookupInt("episode_uid");
+
+                qr.uids.push_back(uid);
+                res.episodes.push_back(episode_uid);
             }
-            ROS_INFO_STREAM("Found (" << result.size() << ") matches.");
+            res.streams.push_back(qr);
+            ROS_INFO_STREAM("Found (" << result.size() << ") matches, with (" << qr.uids.size()
+                                      << ") streams and (" << res.episodes.size() << ") episodes.");
             return true;
         }
 
         template<class StreamType>
         bool StreamCollectionManager<StreamType>::ltm_insert(const StreamType &stream, MetadataPtr metadata) {
+
+            // add common metadata for streams
+            metadata->append("uid", (int) stream.meta.uid);
+            metadata->append("episode_uid", (int) stream.meta.episode);
+            double _start = stream.meta.start.sec + stream.meta.start.nsec * pow10(-9);
+            double _end = stream.meta.end.sec + stream.meta.end.nsec * pow10(-9);
+            metadata->append("start", _start);
+            metadata->append("end", _end);
+
             _coll->insert(stream, metadata);
             // todo: insert into cache
             ROS_INFO_STREAM(_log_prefix << "Inserting stream (" << stream.meta.uid << ") into collection "
