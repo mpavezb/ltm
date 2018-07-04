@@ -126,12 +126,12 @@ namespace ltm {
             }
         }
 
-        void EntitiesManager::query(std::string type, const std::string &json, ltm::QueryServer::Response &res) {
+        void EntitiesManager::query(std::string type, const std::string &json, ltm::QueryServer::Response &res, bool trail) {
             if (_use_plugins) {
                 std::vector<PluginPtr>::iterator it;
                 for (it = _plugins.begin(); it != _plugins.end(); ++it) {
                     if ((*it)->get_type() == type) {
-                        (*it)->query(json, res);
+                        (*it)->query(json, res, trail);
                         return;
                     }
                 }

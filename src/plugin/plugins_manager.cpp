@@ -112,8 +112,8 @@ namespace ltm {
             _streams_manager->query(type, json, res);
         }
 
-        void PluginsManager::query_entity(std::string type, const std::string &json, ltm::QueryServer::Response &res) {
-            _entities_manager->query(type, json, res);
+        void PluginsManager::query_entity(std::string type, const std::string &json, ltm::QueryServer::Response &res, bool trail) {
+            _entities_manager->query(type, json, res, trail);
         }
 
     }

@@ -55,7 +55,7 @@ namespace ltm {
             bool switch_db(const std::string &db_name);
             void append_status(std::stringstream &status);
             void query_stream(std::string type, const std::string &json, ltm::QueryServer::Response &res);
-            void query_entity(std::string type, const std::string &json, ltm::QueryServer::Response &res);
+            void query_entity(std::string type, const std::string &json, ltm::QueryServer::Response &res, bool trail);
         };
     }
 }

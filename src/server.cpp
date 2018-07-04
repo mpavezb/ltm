@@ -85,7 +85,10 @@ namespace ltm {
             _db->query(req.json, res);
             return true;
         } else if (req.target == "entity") {
-            _pl->query_entity(req.semantic_type, req.json, res);
+            _pl->query_entity(req.semantic_type, req.json, res, false);
+            return true;
+        } else if (req.target == "entity_trail") {
+            _pl->query_entity(req.semantic_type, req.json, res, true);
             return true;
         } else if (req.target == "stream") {
             _pl->query_stream(req.semantic_type, req.json, res);

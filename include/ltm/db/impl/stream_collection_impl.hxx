@@ -162,7 +162,6 @@ namespace ltm {
 
         template<class StreamType>
         bool StreamCollectionManager<StreamType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res) {
-            QueryPtr query = _coll->createQuery();
             std::vector<StreamWithMetadataPtr> result;
             res.episodes.clear();
             res.streams.clear();
@@ -170,6 +169,7 @@ namespace ltm {
 
             // generate query and collect documents.
             try {
+                QueryPtr query = _coll->createQuery();
                 query->append(json);
                 result = _coll->queryList(query, true);
             } catch (const ltm_db::NoMatchingMessageException &exception) {

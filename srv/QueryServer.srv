@@ -2,7 +2,7 @@
 string target
 
 # semantic type
-# only valid when 'target' in [entity, stream]
+# only valid when 'target' in [entity, entity_trail, stream]
 string semantic_type
 
 # json query based on MongoDB style
@@ -12,3 +12,4 @@ string json
 uint32[] episodes
 ltm/QueryResult[] streams
 ltm/QueryResult[] entities
+ltm/QueryResult[] entities_trail

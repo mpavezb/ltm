@@ -86,7 +86,6 @@ namespace ltm {
         }
 
         bool EpisodeCollectionManager::query(const std::string &json, ltm::QueryServer::Response &res) {
-            QueryPtr query = _coll->createQuery();
             std::vector<EpisodeWithMetadataPtr> result;
             res.episodes.clear();
             res.entities.clear();
@@ -94,7 +93,9 @@ namespace ltm {
 
             // generate query and collect documents.
             try {
+                QueryPtr query = _coll->createQuery();
                 query->append(json);
+                // TODO: solve this only using metadata!
                 // result = _coll->queryList(query, true);
                 result = _coll->queryList(query, false);
             } catch (const ltm_db::NoMatchingMessageException &exception) {

@@ -2,6 +2,7 @@
 #define LTM_PLUGIN_ENTITY_ROS_IMPL_HXX
 
 #include <ltm/plugin/entity_ros.h>
+#include <ltm/util/util.h>
 
 namespace ltm {
     namespace plugin {
@@ -46,30 +47,54 @@ namespace ltm {
 
         template<class EntityType, class EntitySrv>
         bool EntityROS<EntityType, EntitySrv>::add_service(EntitySrvRequest &req, EntitySrvResponse &res) {
-
+            typename std::vector<EntityType>::const_iterator it;
+            for (it = req.msgs.begin(); it != req.msgs.end(); ++it) {
+                this->update(*it);
+            }
+            return true;
         }
 
         template<class EntityType, class EntitySrv>
         bool EntityROS<EntityType, EntitySrv>::get_service(EntitySrvRequest &req, EntitySrvResponse &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Retrieving entity (" << req.uid << ") from collection '"
-                                              << this->ltm_get_collection_name() << "'");
-            EntityWithMetadataPtr entity_ptr;
-            if (!this->ltm_get(req.uid, entity_ptr)) {
-                ROS_ERROR_STREAM(this->_log_prefix << "Entity with uid '" << req.uid << "' not found.");
-                res.succeeded = (uint8_t) false;
-                return true;
+            ROS_INFO_STREAM(this->_log_prefix << "Retrieving entities from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
+            res.msgs.clear();
+
+            if (!req.stamps.empty() && req.stamps.size() != req.uids.size()) {
+                ROS_WARN_STREAM("Get Service: stamps must be empty or be the same size as the uids field.");
+                return false;
             }
-            res.msg = *entity_ptr;
-            res.succeeded = (uint8_t) true;
+
+            std::vector<uint32_t> visited, not_found;
+            std::vector<uint32_t>::const_iterator it;
+            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+                // do not seek repeated msgs
+                if (visited.end() != std::find(visited.begin(), visited.end(), *it)) continue;
+                visited.push_back(*it);
+
+                EntityWithMetadataPtr entity_ptr;
+                if (!this->ltm_get(*it, entity_ptr)) {
+                    not_found.push_back(*it);
+                    continue;
+                }
+                res.msgs.push_back(*entity_ptr);
+            }
+            ROS_WARN_STREAM_COND(not_found.size() > 0, this->_log_prefix
+                    << "GET: The following requested entities were not found: " << ltm::util::vector_to_str(not_found));
             return true;
         }
 
         template<class EntityType, class EntitySrv>
         bool EntityROS<EntityType, EntitySrv>::delete_service(EntitySrvRequest &req, EntitySrvResponse &res) {
-            ROS_INFO_STREAM(this->_log_prefix << "Removing (" << req.uid << ") from collection '" << this->ltm_get_collection_name()
-                                              << "'");
-            res.succeeded = (uint8_t) this->ltm_remove(req.uid);
-            return res.succeeded;
+            ROS_INFO_STREAM(this->_log_prefix << "Deleting entities from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
+
+            ltm::QueryServer::Response qr;
+//            this->ltm_query()
+            // TODO: delete LOGs
+            std::vector<uint32_t>::const_iterator it;
+            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+                this->ltm_remove(*it);
+            }
+            return true;
         }
     }
 }

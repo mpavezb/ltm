@@ -2,6 +2,7 @@
 #define LTM_PLUGIN_ENTITY_COLLECTION_IMPL_HXX
 
 #include <ltm/db/entity_collection.h>
+#include <ltm/util/util.h>
 
 namespace ltm {
     namespace db {
@@ -84,8 +85,6 @@ namespace ltm {
 
         template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_register_episode(uint32_t uid) {
-            ROS_DEBUG_STREAM(_log_prefix << "Registering episode " << uid);
-
             // subscribe on demand
             bool subscribe = false;
             if (_registry.empty()) subscribe = true;
@@ -99,8 +98,6 @@ namespace ltm {
 
         template<class EntityType>
         bool EntityCollectionManager<EntityType>::ltm_unregister_episode(uint32_t uid) {
-            ROS_DEBUG_STREAM(_log_prefix << "Unregistering episode " << uid);
-
             // unregister from cache
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
             if (it != _registry.end()) _registry.erase(it);
@@ -124,7 +121,7 @@ namespace ltm {
         }
 
         template<class EntityType>
-        void EntityCollectionManager<EntityType>::ltm_get_registry(std::vector<uint32_t> registry) {
+        void EntityCollectionManager<EntityType>::ltm_get_registry(std::vector<uint32_t> &registry) {
             registry = this->_registry;
         }
 
@@ -294,15 +291,51 @@ namespace ltm {
         }
 
         template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res) {
-            QueryPtr query = _coll->createQuery();
-            std::vector<EntityWithMetadataPtr> result;
-            res.episodes.clear();
-            res.streams.clear();
-            res.entities.clear();
-
+        bool EntityCollectionManager<EntityType>::ltm_query_log(const std::string &json, ltm::QueryServer::Response &res) {
             // generate query and collect documents.
+            std::vector<LogWithMetadataPtr> result;
             try {
+                QueryPtr query = _log_coll->createQuery();
+                query->append(json);
+                result = _log_coll->queryList(query, true);
+            } catch (const ltm_db::NoMatchingMessageException &exception) {
+                return false;
+            } catch (const mongo::exception &ex) {
+                ROS_ERROR_STREAM("Error while quering MongoDB for entries in '" << _log_collection_name << "' collection. " << ex.what());
+            }
+
+            // fill uids
+            ltm::QueryResult qr, qre;
+            qr.type = this->ltm_get_type();
+            qre.type = this->ltm_get_type();
+            typename std::vector<LogWithMetadataPtr>::const_iterator it;
+            for (it = result.begin(); it != result.end(); ++it) {
+                uint32_t uid = (uint32_t) (*it)->lookupInt("log_uid");
+                uint32_t e_uid = (uint32_t) (*it)->lookupInt("entity_uid");
+
+                // do not repeat entities
+                if (std::find(qre.uids.begin(), qre.uids.end(), e_uid) == qre.uids.end()) {
+                    qre.uids.push_back(e_uid);
+                }
+                qr.uids.push_back(uid);
+
+                std::vector<uint32_t> episodes;
+                (*it)->lookupUInt32Array("episode_uids", episodes);
+                ltm::util::uid_vector_merge(res.episodes, episodes);
+            }
+            res.entities.push_back(qre);
+            res.entities_trail.push_back(qr);
+            ROS_INFO_STREAM("Found (" << result.size() << ") matches, with (" << qr.uids.size()
+                                      << ") entity logs.");
+            return true;
+        }
+
+        template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_query_actual(const std::string &json, ltm::QueryServer::Response &res) {
+            // generate query and collect documents.
+            std::vector<EntityWithMetadataPtr> result;
+            try {
+                QueryPtr query = _coll->createQuery();
                 query->append(json);
                 result = _coll->queryList(query, true);
             } catch (const ltm_db::NoMatchingMessageException &exception) {
@@ -312,18 +345,33 @@ namespace ltm {
             }
 
             // fill uids
+            ltm::QueryResult qr;
+            qr.type = this->ltm_get_type();
             typename std::vector<EntityWithMetadataPtr>::const_iterator it;
             for (it = result.begin(); it != result.end(); ++it) {
-                // TODO: FIX ME
-                res.episodes.push_back((uint32_t)(*it)->lookupInt("uid"));
+                uint32_t uid = (uint32_t) (*it)->lookupInt("uid");
+                qr.uids.push_back(uid);
             }
-            ROS_INFO_STREAM("Found (" << result.size() << ") matches.");
+            res.entities.push_back(qr);
+            ROS_INFO_STREAM("Found (" << result.size() << ") matches, with (" << qr.uids.size()
+                                      << ") entities.");
             return true;
         }
 
         template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_insert(const EntityType &entity, MetadataPtr metadata) {
-            _coll->insert(entity, metadata);
+        bool EntityCollectionManager<EntityType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res, bool trail) {
+            res.episodes.clear();
+            res.streams.clear();
+            res.entities.clear();
+            res.entities_trail.clear();
+            if (trail) return ltm_query_log(json, res);
+            return ltm_query_actual(json, res);
+        }
+
+        template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_insert(const EntityType &entity) {
+            // insert
+            _coll->insert(entity, this->make_metadata(entity));
             // todo: insert into cache
             ROS_INFO_STREAM(_log_prefix << "Inserting entity (" << entity.meta.uid << ") into collection "
                                         << "'" << _collection_name << "'. (" << ltm_count() << ") entries."
@@ -332,8 +380,8 @@ namespace ltm {
         }
 
         template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_log_insert(const LogType &log, MetadataPtr metadata) {
-            _log_coll->insert(log, metadata);
+        bool EntityCollectionManager<EntityType>::ltm_log_insert(const LogType &log) {
+            _log_coll->insert(log, ltm_make_log_metadata(log));
             // todo: insert into cache
             ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG (" << log.log_uid << ") for entity (" << log.entity_uid
                                         << ") into collection " << "'" << _log_collection_name
@@ -343,8 +391,8 @@ namespace ltm {
         }
 
         template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_diff_insert(const EntityType &diff, MetadataPtr metadata) {
-            _diff_coll->insert(diff, metadata);
+        bool EntityCollectionManager<EntityType>::ltm_diff_insert(const EntityType &diff) {
+            _diff_coll->insert(diff, this->make_metadata(diff));
             // todo: insert into cache
             ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG DIFF (" << diff.meta.log_uid << ") for entity (" << diff.meta.uid
                                         << ") into collection " << "'" << _diff_collection_name
@@ -354,17 +402,45 @@ namespace ltm {
         }
 
         template<class EntityType>
-        MetadataPtr EntityCollectionManager<EntityType>::ltm_create_metadata() {
-            return _coll->createMetadata();
+        MetadataPtr EntityCollectionManager<EntityType>::ltm_create_metadata(const EntityType &entity) {
+            MetadataPtr metadata = _coll->createMetadata();
+            metadata->append("uid", (int) entity.meta.uid);
+            metadata->append("log_uid", (int) entity.meta.log_uid);
+            return metadata;
         }
 
         template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_update(uint32_t uid, const EntityType &entity, MetadataPtr metadata) {
+        MetadataPtr EntityCollectionManager<EntityType>::ltm_make_log_metadata(const ltm::EntityLog &log) {
+            MetadataPtr meta = _log_coll->createMetadata();
+
+            // KEYS
+            meta->append("entity_uid", (int) log.entity_uid);
+            meta->append("log_uid", (int) log.log_uid);
+
+            // WHO
+            meta->append("episode_uids", log.episode_uids);
+
+            // WHEN
+            double timestamp = log.timestamp.sec + log.timestamp.nsec * pow10(-9);
+            meta->append("timestamp", timestamp);
+            meta->append("prev_log", (int) log.prev_log);
+            meta->append("next_log", (int) log.next_log);
+
+            // WHAT
+            meta->append("new_f", log.new_f);
+            meta->append("updated_f", log.updated_f);
+            meta->append("removed_f", log.removed_f);
+
+            return meta;
+        }
+
+        template<class EntityType>
+        bool EntityCollectionManager<EntityType>::ltm_update(uint32_t uid, const EntityType &entity) {
             if (!ltm_has(uid)) {
-                ltm_insert(entity, metadata);
+                ltm_insert(entity);
             }
             ltm_remove(uid);
-            _coll->insert(entity, metadata);
+            _coll->insert(entity, this->make_metadata(entity));
             // todo: insert into cache
             ROS_INFO_STREAM(_log_prefix << "Updating entity (" << entity.meta.uid << ") from collection "
                                         << "'" << _collection_name << "'. (" << ltm_count() << ") entries."
