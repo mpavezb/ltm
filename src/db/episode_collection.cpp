@@ -95,20 +95,86 @@ namespace ltm {
             // generate query and collect documents.
             try {
                 query->append(json);
-                result = _coll->queryList(query, true);
+                // result = _coll->queryList(query, true);
+                result = _coll->queryList(query, false);
             } catch (const ltm_db::NoMatchingMessageException &exception) {
                 return false;
             } catch (const mongo::exception &ex) {
                 ROS_ERROR_STREAM("Error while quering MongoDB for episodes. " << ex.what());
             }
 
-            // fill uids
+            // Retrieve uids
+            int s_cnt = 0, e_cnt = 0;
+            std::map<std::string, ltm::QueryResult> stream_r;
+            std::map<std::string, ltm::QueryResult> entity_r;
+            std::map<std::string, ltm::QueryResult>::iterator q_it;
             std::vector<EpisodeWithMetadataPtr>::const_iterator it;
             for (it = result.begin(); it != result.end(); ++it) {
+
+                // fill episode uids
                 res.episodes.push_back((uint32_t)(*it)->lookupInt("uid"));
-                // TODO: FILL WITH STREAMS AND ENTITIES
+
+                // retrieve stream QueryResults
+                std::vector<ltm::StreamRegister>::const_iterator s_cit;
+                for (s_cit = (*it)->what.streams.begin(); s_cit != (*it)->what.streams.end(); ++s_cit) {
+
+                    // create QueryResult if not exists
+                    q_it = stream_r.find(s_cit->type);
+                    if (q_it == stream_r.end()) {
+                        ltm::QueryResult qr;
+                        qr.type = s_cit->type;
+                        qr.uids.push_back(s_cit->uid);
+                        stream_r[s_cit->type] = qr;
+                        s_cnt++;
+                        continue;
+                    }
+
+                    // append unique uid
+                    std::vector<uint32_t>::const_iterator u_it;
+                    u_it = std::find(q_it->second.uids.begin(), q_it->second.uids.end(), s_cit->uid);
+                    if (u_it == q_it->second.uids.end()) {
+                        q_it->second.uids.push_back(s_cit->uid);
+                        s_cnt++;
+                    }
+                }
+
+                // retrieve entity QueryResults
+                std::vector<ltm::EntityRegister>::const_iterator e_cit;
+                for (e_cit = (*it)->what.entities.begin(); e_cit != (*it)->what.entities.end(); ++e_cit) {
+
+                    // create QueryResult if not exists
+                    q_it = entity_r.find(e_cit->type);
+                    if (q_it == entity_r.end()) {
+                        ltm::QueryResult qr;
+                        qr.type = e_cit->type;
+                        qr.uids.push_back(e_cit->uid);
+                        entity_r[e_cit->type] = qr;
+                        e_cnt++;
+                        continue;
+                    }
+
+                    // append unique uid
+                    std::vector<uint32_t>::const_iterator u_it;
+                    u_it = std::find(q_it->second.uids.begin(), q_it->second.uids.end(), e_cit->uid);
+                    if (u_it == q_it->second.uids.end()) {
+                        q_it->second.uids.push_back(e_cit->uid);
+                        e_cnt++;
+                    }
+                }
+
             }
-            ROS_INFO_STREAM("Found (" << result.size() << ") matches.");
+
+            // Fill stream/entity QueryResults
+            for (q_it = stream_r.begin(); q_it != stream_r.end(); ++q_it) {
+                res.streams.push_back(q_it->second);
+            }
+            for (q_it = entity_r.begin(); q_it != entity_r.end(); ++q_it) {
+                res.entities.push_back(q_it->second);
+            }
+
+            ROS_INFO_STREAM("Found (" << result.size() << ") matches, with (" << s_cnt << ") instances of ("
+                                      << res.streams.size() << ") streams, and (" << e_cnt << ") instances of ("
+                                      << res.entities.size() << ") entities.");
             return true;
         }
 
