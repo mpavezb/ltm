@@ -43,7 +43,11 @@ namespace ltm {
 
     void Server::show_status() {
         std::stringstream status;
-        status << "Episodes: " << _db->count() << " entries." << std::endl;
+        status << "Database parameters: " << std::endl;
+        status << " - name: " << _db_name << std::endl;
+        status << " - host: " << _db_host << std::endl;
+        status << " - port: " << _db_port << std::endl;
+        status << "Episodes: " << _db->count() << " entries in collection '" << _db_collection_name << "'" << std::endl;
         _pl->append_status(status);
         ROS_INFO_STREAM(_log_prefix << "DB Status:\n" << status.str());
     }
