@@ -6,35 +6,35 @@
 namespace ltm {
     namespace db {
 
-        template<class StreamType>
-        std::string StreamCollectionManager<StreamType>::ltm_get_type() {
+        template<class StreamMsg>
+        std::string StreamCollectionManager<StreamMsg>::ltm_get_type() {
             return _type;
         }
 
-        template<class StreamType>
-        std::string StreamCollectionManager<StreamType>::ltm_get_collection_name() {
+        template<class StreamMsg>
+        std::string StreamCollectionManager<StreamMsg>::ltm_get_collection_name() {
             return _collection_name;
         }
 
-        template<class StreamType>
-        std::string StreamCollectionManager<StreamType>::ltm_get_db_name() {
+        template<class StreamMsg>
+        std::string StreamCollectionManager<StreamMsg>::ltm_get_db_name() {
             return _db_name;
         }
 
-        template<class StreamType>
-        std::string StreamCollectionManager<StreamType>::ltm_get_status() {
+        template<class StreamMsg>
+        std::string StreamCollectionManager<StreamMsg>::ltm_get_status() {
             std::stringstream ss;
             ss << "Stream '" << _type << "' has (" << ltm_count() << ") entries in collection '" << _collection_name << "'.";
             return ss.str();
         }
 
-        template<class StreamType>
-        void StreamCollectionManager<StreamType>::ltm_resetup_db(const std::string &db_name) {
+        template<class StreamMsg>
+        void StreamCollectionManager<StreamMsg>::ltm_resetup_db(const std::string &db_name) {
             _db_name = db_name;
 
             try {
                 // host, port, timeout
-                _coll = _conn->openCollectionPtr<StreamType>(_db_name, _collection_name);
+                _coll = _conn->openCollectionPtr<StreamMsg>(_db_name, _collection_name);
             }
             catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
@@ -51,16 +51,16 @@ namespace ltm {
             // TODO: clear cache
         }
 
-        template<class StreamType>
-        void StreamCollectionManager<StreamType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
+        template<class StreamMsg>
+        void StreamCollectionManager<StreamMsg>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
             _collection_name = "stream:" + collection_name;
             _type = type;
             _conn = db_ptr;
             this->ltm_resetup_db(db_name);
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_register_episode(uint32_t uid) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_register_episode(uint32_t uid) {
             ROS_DEBUG_STREAM(_log_prefix << "Registering episode " << uid);
 
             // subscribe on demand
@@ -74,8 +74,8 @@ namespace ltm {
             return subscribe;
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_unregister_episode(uint32_t uid) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_unregister_episode(uint32_t uid) {
             ROS_DEBUG_STREAM(_log_prefix << "Unregistering episode " << uid);
 
             // unregister from cache
@@ -88,8 +88,8 @@ namespace ltm {
             return unsubscribe;
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_is_reserved(int uid) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_is_reserved(int uid) {
             // value is in registry
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
             if (it != _registry.end()) return true;
@@ -100,8 +100,8 @@ namespace ltm {
             return ltm_has(uid);
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_remove(uint32_t uid) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_remove(uint32_t uid) {
             // value is already reserved
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
             if (it != _registry.end()) _registry.erase(it);
@@ -116,8 +116,8 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_has(int uid) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_has(int uid) {
             // TODO: doc, no revisa por uids ya registradas
             QueryPtr query = _coll->createQuery();
             query->append("uid", uid);
@@ -130,13 +130,13 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType>
-        int StreamCollectionManager<StreamType>::ltm_count() {
+        template<class StreamMsg>
+        int StreamCollectionManager<StreamMsg>::ltm_count() {
             return _coll->count();
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_drop_db() {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_drop_db() {
             ROS_WARN_STREAM("Dropping database for '" << ltm_get_type() << "'. Collection " << _collection_name << ".");
             QueryPtr query = _coll->createQuery();
             query->appendGT("uid", -1);
@@ -146,8 +146,8 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_get(uint32_t uid, StreamWithMetadataPtr &stream_ptr) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_get(uint32_t uid, StreamWithMetadataPtr &stream_ptr) {
             QueryPtr query = _coll->createQuery();
             query->append("uid", (int) uid);
             try {
@@ -160,8 +160,8 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_query(const std::string &json, ltm::QueryServer::Response &res) {
             std::vector<StreamWithMetadataPtr> result;
             res.episodes.clear();
             res.streams.clear();
@@ -195,8 +195,8 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_insert(const StreamType &stream, MetadataPtr metadata) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_insert(const StreamMsg &stream, MetadataPtr metadata) {
             // add common metadata for streams
             metadata->append("uid", (int) stream.meta.uid);
             metadata->append("episode_uid", (int) stream.meta.episode);
@@ -214,13 +214,13 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType>
-        MetadataPtr StreamCollectionManager<StreamType>::ltm_create_metadata() {
+        template<class StreamMsg>
+        MetadataPtr StreamCollectionManager<StreamMsg>::ltm_create_metadata() {
             return _coll->createMetadata();
         }
 
-        template<class StreamType>
-        bool StreamCollectionManager<StreamType>::ltm_update(uint32_t uid, const StreamType &stream) {
+        template<class StreamMsg>
+        bool StreamCollectionManager<StreamMsg>::ltm_update(uint32_t uid, const StreamMsg &stream) {
             ROS_WARN("UPDATE: Method not implemented");
             return false;
         }

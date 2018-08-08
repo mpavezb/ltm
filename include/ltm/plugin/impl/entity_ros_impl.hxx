@@ -7,8 +7,8 @@
 namespace ltm {
     namespace plugin {
 
-        template<class EntityType, class EntitySrv>
-        void EntityROS<EntityType, EntitySrv>::ltm_setup(const std::string& param_ns, DBConnectionPtr db_ptr, std::string db_name) {
+        template<class EntityMsg, class EntitySrv>
+        void EntityROS<EntityMsg, EntitySrv>::ltm_setup(const std::string& param_ns, DBConnectionPtr db_ptr, std::string db_name) {
             ltm::util::ParameterServerWrapper psw("~");
             std::string collection_name;
             std::string type;
@@ -19,25 +19,32 @@ namespace ltm {
             this->ltm_setup_db(db_ptr, db_name, collection_name, type);
         };
 
-        template<class EntityType, class EntitySrv>
-        void EntityROS<EntityType, EntitySrv>::ltm_init() {
+        template<class EntityMsg, class EntitySrv>
+        void EntityROS<EntityMsg, EntitySrv>::ltm_init() {
             ros::NodeHandle priv("~");
             std::string ns = "entity/" + this->ltm_get_type() + "/";
-            _status_service = priv.advertiseService(ns + "status", &EntityROS<EntityType, EntitySrv>::status_service, this);
-            _drop_db_service = priv.advertiseService(ns + "drop_db", &EntityROS<EntityType, EntitySrv>::drop_db_service, this);
-            _add_entity_service = priv.advertiseService(ns + "add", &EntityROS<EntityType, EntitySrv>::add_service, this);
-            _get_entity_service = priv.advertiseService(ns + "get", &EntityROS<EntityType, EntitySrv>::get_service, this);
-            _delete_entity_service = priv.advertiseService(ns + "delete", &EntityROS<EntityType, EntitySrv>::delete_service, this);
+            _status_service = priv.advertiseService(ns + "status", &EntityROS<EntityMsg, EntitySrv>::status_service, this);
+            _drop_db_service = priv.advertiseService(ns + "drop_db", &EntityROS<EntityMsg, EntitySrv>::drop_db_service, this);
+            _add_entity_service = priv.advertiseService(ns + "add", &EntityROS<EntityMsg, EntitySrv>::add_service, this);
+            _get_entity_service = priv.advertiseService(ns + "get", &EntityROS<EntityMsg, EntitySrv>::get_service, this);
+            _delete_entity_service = priv.advertiseService(ns + "delete", &EntityROS<EntityMsg, EntitySrv>::delete_service, this);
         }
 
-        template<class EntityType, class EntitySrv>
-        bool EntityROS<EntityType, EntitySrv>::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
             ROS_INFO_STREAM(this->_log_prefix << this->ltm_get_status());
             return true;
         }
 
-        template<class EntityType, class EntitySrv>
-        bool EntityROS<EntityType, EntitySrv>::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::drop_db_service(ltm::DropDB::Request &req, ltm::DropDB::Response &res) {
+            if (!req.i_understand_this_is_a_dangerous_operation ||
+                req.html_is_a_real_programming_language) {
+                ROS_WARN_STREAM(this->_log_prefix << "Attempted to drop the collections for entity '" << this->ltm_get_type()
+                                            << "' with unmet requirements!. Please read the ltm/DropDB.srv description. Bye!.");
+                return false;
+            }
+
             ROS_WARN_STREAM(this->_log_prefix << "Deleting all entries from collection '" << this->ltm_get_collection_name() << "'.");
             std_srvs::Empty srv;
             this->ltm_drop_db();
@@ -45,17 +52,17 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType, class EntitySrv>
-        bool EntityROS<EntityType, EntitySrv>::add_service(EntitySrvRequest &req, EntitySrvResponse &res) {
-            typename std::vector<EntityType>::const_iterator it;
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::add_service(EntitySrvRequest &req, EntitySrvResponse &res) {
+            typename std::vector<EntityMsg>::const_iterator it;
             for (it = req.msgs.begin(); it != req.msgs.end(); ++it) {
                 this->update(*it);
             }
             return true;
         }
 
-        template<class EntityType, class EntitySrv>
-        bool EntityROS<EntityType, EntitySrv>::get_service(EntitySrvRequest &req, EntitySrvResponse &res) {
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::get_service(EntitySrvRequest &req, EntitySrvResponse &res) {
             ROS_INFO_STREAM(this->_log_prefix << "Retrieving entities from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
             res.msgs.clear();
 
@@ -83,8 +90,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType, class EntitySrv>
-        bool EntityROS<EntityType, EntitySrv>::delete_service(EntitySrvRequest &req, EntitySrvResponse &res) {
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::delete_service(EntitySrvRequest &req, EntitySrvResponse &res) {
             ROS_INFO_STREAM(this->_log_prefix << "Deleting entities from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
 
             ltm::QueryServer::Response qr;

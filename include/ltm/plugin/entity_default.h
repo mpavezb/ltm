@@ -6,8 +6,9 @@
 namespace ltm {
     namespace plugin {
 
-        template<class EntityType, class EntitySrv>
-        class EntityDefault : public ltm::plugin::EntityROS<EntityType, EntitySrv> {
+        // TODO: modificar nomenclatura: MsgType, SrvType
+        template<class EntityMsg, class EntitySrv>
+        class EntityDefault : public ltm::plugin::EntityROS<EntityMsg, EntitySrv> {
 
 
         };

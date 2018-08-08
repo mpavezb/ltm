@@ -9,13 +9,13 @@
 namespace ltm {
     namespace db {
 
-        template<class StreamType>
+        template<class StreamMsg>
         class StreamCollectionManager {
         private:
-            typedef ltm_db::MessageCollection<StreamType> StreamCollection;
+            typedef ltm_db::MessageCollection<StreamMsg> StreamCollection;
             typedef boost::shared_ptr<StreamCollection> StreamCollectionPtr;
 
-            typedef ltm_db::MessageWithMetadata<StreamType> StreamWithMetadata;
+            typedef ltm_db::MessageWithMetadata<StreamMsg> StreamWithMetadata;
             typedef boost::shared_ptr<const StreamWithMetadata> StreamWithMetadataPtr;
 
             // database connection
@@ -48,13 +48,13 @@ namespace ltm {
             int ltm_count();
             bool ltm_drop_db();
             bool ltm_get(uint32_t uid, StreamWithMetadataPtr &stream_ptr);
-            bool ltm_insert(const StreamType &stream, MetadataPtr metadata);
+            bool ltm_insert(const StreamMsg &stream, MetadataPtr metadata);
             bool ltm_query(const std::string& json, ltm::QueryServer::Response &res);
             MetadataPtr ltm_create_metadata();
-            bool ltm_update(uint32_t uid, const StreamType &stream);
+            bool ltm_update(uint32_t uid, const StreamMsg &stream);
 
             // Must be provided by the user
-            virtual MetadataPtr make_metadata(const StreamType &stream) = 0;
+            virtual MetadataPtr make_metadata(const StreamMsg &stream) = 0;
 
         };
 

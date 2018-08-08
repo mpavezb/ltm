@@ -6,8 +6,8 @@
 namespace ltm {
     namespace plugin {
 
-        template<class StreamType, class StreamSrv>
-        class StreamDefault : public ltm::plugin::StreamROS<StreamType, StreamSrv> {
+        template<class StreamMsg, class StreamSrv>
+        class StreamDefault : public ltm::plugin::StreamROS<StreamMsg, StreamSrv> {
 
 
         };

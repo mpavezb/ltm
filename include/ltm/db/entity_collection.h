@@ -15,11 +15,11 @@
 namespace ltm {
     namespace db {
 
-        template<class EntityType>
+        template<class EntityMsg>
         class EntityCollectionManager {
         private:
             // Entity Types
-            typedef ltm_db::MessageWithMetadata<EntityType> EntityWithMetadata;
+            typedef ltm_db::MessageWithMetadata<EntityMsg> EntityWithMetadata;
             typedef boost::shared_ptr<const EntityWithMetadata> EntityWithMetadataPtr;
 
             // Log Message Types
@@ -28,7 +28,7 @@ namespace ltm {
             typedef boost::shared_ptr<const LogWithMetadata> LogWithMetadataPtr;
 
             // Entity Collection
-            typedef ltm_db::MessageCollection<EntityType> EntityCollection;
+            typedef ltm_db::MessageCollection<EntityMsg> EntityCollection;
             typedef boost::shared_ptr<EntityCollection> EntityCollectionPtr;
 
             // Log Message Collection
@@ -82,7 +82,7 @@ namespace ltm {
             // DIFF DB Methods
             int ltm_diff_count();
             bool ltm_diff_has(int uid);
-            bool ltm_diff_insert(const EntityType &diff);
+            bool ltm_diff_insert(const EntityMsg &diff);
 
 
             // ENTITY DB Methods
@@ -91,18 +91,18 @@ namespace ltm {
             int ltm_count();
             bool ltm_has(int uid);
             bool ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr);
-            bool ltm_insert(const EntityType &entity);
+            bool ltm_insert(const EntityMsg &entity);
             bool ltm_query(const std::string& json, ltm::QueryServer::Response &res, bool trail);
-            bool ltm_update(uint32_t uid, const EntityType &entity);
+            bool ltm_update(uint32_t uid, const EntityMsg &entity);
             bool ltm_remove(uint32_t uid);
 
             bool ltm_drop_db();
 
-            MetadataPtr ltm_create_metadata(const EntityType &entity);
+            MetadataPtr ltm_create_metadata(const EntityMsg &entity);
 
             // Must be provided by the user
-            virtual MetadataPtr make_metadata(const EntityType &entity) = 0;
-            virtual void update(const EntityType &entityType) = 0;
+            virtual MetadataPtr make_metadata(const EntityMsg &entity) = 0;
+            virtual void update(const EntityMsg &entityType) = 0;
         };
 
     }

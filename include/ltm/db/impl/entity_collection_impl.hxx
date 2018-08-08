@@ -7,23 +7,23 @@
 namespace ltm {
     namespace db {
 
-        template<class EntityType>
-        std::string EntityCollectionManager<EntityType>::ltm_get_type() {
+        template<class EntityMsg>
+        std::string EntityCollectionManager<EntityMsg>::ltm_get_type() {
             return _type;
         }
 
-        template<class EntityType>
-        std::string EntityCollectionManager<EntityType>::ltm_get_collection_name() {
+        template<class EntityMsg>
+        std::string EntityCollectionManager<EntityMsg>::ltm_get_collection_name() {
             return _collection_name;
         }
 
-        template<class EntityType>
-        std::string EntityCollectionManager<EntityType>::ltm_get_db_name() {
+        template<class EntityMsg>
+        std::string EntityCollectionManager<EntityMsg>::ltm_get_db_name() {
             return _db_name;
         }
 
-        template<class EntityType>
-        std::string EntityCollectionManager<EntityType>::ltm_get_status() {
+        template<class EntityMsg>
+        std::string EntityCollectionManager<EntityMsg>::ltm_get_status() {
             std::stringstream ss;
             ss << "Entity '" << _type << "' has (" << ltm_count()
                << ") instances in collection '" << _collection_name
@@ -31,13 +31,13 @@ namespace ltm {
             return ss.str();
         }
 
-        template<class EntityType>
-        void EntityCollectionManager<EntityType>::ltm_resetup_db(const std::string &db_name) {
+        template<class EntityMsg>
+        void EntityCollectionManager<EntityMsg>::ltm_resetup_db(const std::string &db_name) {
             _db_name = db_name;
 
             try {
                 // host, port, timeout
-                _coll = _conn->openCollectionPtr<EntityType>(_db_name, _collection_name);
+                _coll = _conn->openCollectionPtr<EntityMsg>(_db_name, _collection_name);
             }
             catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
@@ -46,7 +46,7 @@ namespace ltm {
             }
             try {
                 // host, port, timeout
-                _diff_coll = _conn->openCollectionPtr<EntityType>(_db_name, _diff_collection_name);
+                _diff_coll = _conn->openCollectionPtr<EntityMsg>(_db_name, _diff_collection_name);
             }
             catch (const ltm_db::DbConnectException &exception) {
                 // Connection timeout
@@ -73,8 +73,8 @@ namespace ltm {
             _reserved_log_uids.clear();
         }
 
-        template<class EntityType>
-        void EntityCollectionManager<EntityType>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
+        template<class EntityMsg>
+        void EntityCollectionManager<EntityMsg>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
             _collection_name = "entity:" + collection_name;
             _log_collection_name = "entity:" + collection_name + ".meta";
             _diff_collection_name = "entity:" + collection_name + ".trail";
@@ -83,8 +83,8 @@ namespace ltm {
             this->ltm_resetup_db(db_name);
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_register_episode(uint32_t uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_register_episode(uint32_t uid) {
             // subscribe on demand
             bool subscribe = false;
             if (_registry.empty()) subscribe = true;
@@ -96,8 +96,8 @@ namespace ltm {
             return subscribe;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_unregister_episode(uint32_t uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_unregister_episode(uint32_t uid) {
             // unregister from cache
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
             if (it != _registry.end()) _registry.erase(it);
@@ -108,8 +108,8 @@ namespace ltm {
             return unsubscribe;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_is_reserved(int uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_is_reserved(int uid) {
             // value is in registry
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
             if (it != _registry.end()) return true;
@@ -120,13 +120,13 @@ namespace ltm {
             return ltm_has(uid);
         }
 
-        template<class EntityType>
-        void EntityCollectionManager<EntityType>::ltm_get_registry(std::vector<uint32_t> &registry) {
+        template<class EntityMsg>
+        void EntityCollectionManager<EntityMsg>::ltm_get_registry(std::vector<uint32_t> &registry) {
             registry = this->_registry;
         }
 
-        template<class EntityType>
-        int EntityCollectionManager<EntityType>::ltm_reserve_log_uid() {
+        template<class EntityMsg>
+        int EntityCollectionManager<EntityMsg>::ltm_reserve_log_uid() {
             // TODO: find better way, maybe select the max_uid+1
             // Returns a pseudo-random integral number in the range between 0 and RAND_MAX.
             uint32_t max_int32 = std::numeric_limits<uint32_t>::max();
@@ -169,8 +169,8 @@ namespace ltm {
             return value;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_remove(uint32_t uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_remove(uint32_t uid) {
             // value is already reserved
             std::vector<uint32_t>::iterator it = std::find(_registry.begin(), _registry.end(), uid);
             if (it != _registry.end()) _registry.erase(it);
@@ -185,8 +185,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_has(int uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_has(int uid) {
             // TODO: doc, no revisa por uids ya registradas
             QueryPtr query = _coll->createQuery();
             query->append("uid", uid);
@@ -199,8 +199,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_log_has(int uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_log_has(int uid) {
             // TODO: doc, no revisa por uids ya registradas
             QueryPtr query = _log_coll->createQuery();
             query->append("log_uid", uid);
@@ -213,8 +213,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_diff_has(int uid) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_diff_has(int uid) {
             // TODO: doc, no revisa por uids ya registradas
             QueryPtr query = _diff_coll->createQuery();
             query->append("log_uid", uid);
@@ -227,23 +227,23 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        int EntityCollectionManager<EntityType>::ltm_count() {
+        template<class EntityMsg>
+        int EntityCollectionManager<EntityMsg>::ltm_count() {
             return _coll->count();
         }
 
-        template<class EntityType>
-        int EntityCollectionManager<EntityType>::ltm_log_count() {
+        template<class EntityMsg>
+        int EntityCollectionManager<EntityMsg>::ltm_log_count() {
             return _log_coll->count();
         }
 
-        template<class EntityType>
-        int EntityCollectionManager<EntityType>::ltm_diff_count() {
+        template<class EntityMsg>
+        int EntityCollectionManager<EntityMsg>::ltm_diff_count() {
             return _diff_coll->count();
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_drop_db() {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_drop_db() {
             ROS_WARN_STREAM("Dropping database for '" << ltm_get_type() << "'. Collections: " << _collection_name << " and {.meta, .trail}.");
             QueryPtr query = _coll->createQuery();
             query->appendGT("uid", -1);
@@ -261,8 +261,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr) {
             QueryPtr query = _coll->createQuery();
             query->append("uid", (int) uid);
             try {
@@ -275,8 +275,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        int EntityCollectionManager<EntityType>::ltm_get_last_log_uid(uint32_t entity_uid) {
+        template<class EntityMsg>
+        int EntityCollectionManager<EntityMsg>::ltm_get_last_log_uid(uint32_t entity_uid) {
             QueryPtr query = _coll->createQuery();
             EntityWithMetadataPtr entity_ptr;
             query->append("uid", (int) entity_uid);
@@ -290,8 +290,8 @@ namespace ltm {
             return entity_ptr->lookupInt("log_uid");
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_query_log(const std::string &json, ltm::QueryServer::Response &res) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_query_log(const std::string &json, ltm::QueryServer::Response &res) {
             // generate query and collect documents.
             std::vector<LogWithMetadataPtr> result;
             try {
@@ -330,8 +330,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_query_actual(const std::string &json, ltm::QueryServer::Response &res) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_query_actual(const std::string &json, ltm::QueryServer::Response &res) {
             // generate query and collect documents.
             std::vector<EntityWithMetadataPtr> result;
             try {
@@ -358,8 +358,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_query(const std::string &json, ltm::QueryServer::Response &res, bool trail) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_query(const std::string &json, ltm::QueryServer::Response &res, bool trail) {
             res.episodes.clear();
             res.streams.clear();
             res.entities.clear();
@@ -368,8 +368,8 @@ namespace ltm {
             return ltm_query_actual(json, res);
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_insert(const EntityType &entity) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_insert(const EntityMsg &entity) {
             // insert
             _coll->insert(entity, this->make_metadata(entity));
             // todo: insert into cache
@@ -379,8 +379,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_log_insert(const LogType &log) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_log_insert(const LogType &log) {
             _log_coll->insert(log, ltm_make_log_metadata(log));
             // todo: insert into cache
             ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG (" << log.log_uid << ") for entity (" << log.entity_uid
@@ -390,8 +390,8 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_diff_insert(const EntityType &diff) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_diff_insert(const EntityMsg &diff) {
             _diff_coll->insert(diff, this->make_metadata(diff));
             // todo: insert into cache
             ROS_DEBUG_STREAM(_log_prefix << "Inserting LOG DIFF (" << diff.meta.log_uid << ") for entity (" << diff.meta.uid
@@ -401,16 +401,16 @@ namespace ltm {
             return true;
         }
 
-        template<class EntityType>
-        MetadataPtr EntityCollectionManager<EntityType>::ltm_create_metadata(const EntityType &entity) {
+        template<class EntityMsg>
+        MetadataPtr EntityCollectionManager<EntityMsg>::ltm_create_metadata(const EntityMsg &entity) {
             MetadataPtr metadata = _coll->createMetadata();
             metadata->append("uid", (int) entity.meta.uid);
             metadata->append("log_uid", (int) entity.meta.log_uid);
             return metadata;
         }
 
-        template<class EntityType>
-        MetadataPtr EntityCollectionManager<EntityType>::ltm_make_log_metadata(const ltm::EntityLog &log) {
+        template<class EntityMsg>
+        MetadataPtr EntityCollectionManager<EntityMsg>::ltm_make_log_metadata(const ltm::EntityLog &log) {
             MetadataPtr meta = _log_coll->createMetadata();
 
             // KEYS
@@ -434,8 +434,8 @@ namespace ltm {
             return meta;
         }
 
-        template<class EntityType>
-        bool EntityCollectionManager<EntityType>::ltm_update(uint32_t uid, const EntityType &entity) {
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_update(uint32_t uid, const EntityMsg &entity) {
             if (!ltm_has(uid)) {
                 ltm_insert(entity);
             }

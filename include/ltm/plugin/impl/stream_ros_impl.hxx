@@ -7,8 +7,8 @@
 namespace ltm {
     namespace plugin {
 
-        template<class StreamType, class StreamSrv>
-        void StreamROS<StreamType, StreamSrv>::ltm_setup(const std::string& param_ns, DBConnectionPtr db_ptr, std::string db_name) {
+        template<class StreamMsg, class StreamSrv>
+        void StreamROS<StreamMsg, StreamSrv>::ltm_setup(const std::string& param_ns, DBConnectionPtr db_ptr, std::string db_name) {
             ltm::util::ParameterServerWrapper psw("~");
             std::string collection_name;
             std::string type;
@@ -19,25 +19,32 @@ namespace ltm {
             this->ltm_setup_db(db_ptr, db_name, collection_name, type);
         };
 
-        template<class StreamType, class StreamSrv>
-        void StreamROS<StreamType, StreamSrv>::ltm_init() {
+        template<class StreamMsg, class StreamSrv>
+        void StreamROS<StreamMsg, StreamSrv>::ltm_init() {
             ros::NodeHandle priv("~");
             std::string ns = "stream/" + this->ltm_get_type() + "/";
-            _status_service = priv.advertiseService(ns + "status", &StreamROS<StreamType, StreamSrv>::status_service, this);
-            _drop_db_service = priv.advertiseService(ns + "drop_db", &StreamROS<StreamType, StreamSrv>::drop_db_service, this);
-            _add_stream_service = priv.advertiseService(ns + "add", &StreamROS<StreamType, StreamSrv>::add_service, this);
-            _get_stream_service = priv.advertiseService(ns + "get", &StreamROS<StreamType, StreamSrv>::get_service, this);
-            _delete_stream_service = priv.advertiseService(ns + "delete", &StreamROS<StreamType, StreamSrv>::delete_service, this);
+            _status_service = priv.advertiseService(ns + "status", &StreamROS<StreamMsg, StreamSrv>::status_service, this);
+            _drop_db_service = priv.advertiseService(ns + "drop_db", &StreamROS<StreamMsg, StreamSrv>::drop_db_service, this);
+            _add_stream_service = priv.advertiseService(ns + "add", &StreamROS<StreamMsg, StreamSrv>::add_service, this);
+            _get_stream_service = priv.advertiseService(ns + "get", &StreamROS<StreamMsg, StreamSrv>::get_service, this);
+            _delete_stream_service = priv.advertiseService(ns + "delete", &StreamROS<StreamMsg, StreamSrv>::delete_service, this);
         }
 
-        template<class StreamType, class StreamSrv>
-        bool StreamROS<StreamType, StreamSrv>::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        template<class StreamMsg, class StreamSrv>
+        bool StreamROS<StreamMsg, StreamSrv>::status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
             ROS_INFO_STREAM(this->_log_prefix << this->ltm_get_status());
             return true;
         }
 
-        template<class StreamType, class StreamSrv>
-        bool StreamROS<StreamType, StreamSrv>::drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res) {
+        template<class StreamMsg, class StreamSrv>
+        bool StreamROS<StreamMsg, StreamSrv>::drop_db_service(ltm::DropDB::Request &req, ltm::DropDB::Response &res) {
+            if (!req.i_understand_this_is_a_dangerous_operation ||
+                req.html_is_a_real_programming_language) {
+                ROS_WARN_STREAM(this->_log_prefix << "Attempted to drop the collection for stream '" << this->ltm_get_type()
+                                            << "' with unmet requirements!. Please read the ltm/DropDB.srv description. Bye!.");
+                return false;
+            }
+
             ROS_WARN_STREAM(this->_log_prefix << "Deleting all entries from collection '" << this->ltm_get_collection_name() << "'.");
             std_srvs::Empty srv;
             this->ltm_drop_db();
@@ -45,17 +52,17 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType, class StreamSrv>
-        bool StreamROS<StreamType, StreamSrv>::add_service(StreamSrvRequest &req, StreamSrvResponse &res) {
-            typename std::vector<StreamType>::const_iterator it;
+        template<class StreamMsg, class StreamSrv>
+        bool StreamROS<StreamMsg, StreamSrv>::add_service(StreamSrvRequest &req, StreamSrvResponse &res) {
+            typename std::vector<StreamMsg>::const_iterator it;
             for (it = req.msgs.begin(); it != req.msgs.end(); ++it) {
                 this->ltm_insert(*it, this->make_metadata(*it));
             }
             return true;
         }
 
-        template<class StreamType, class StreamSrv>
-        bool StreamROS<StreamType, StreamSrv>::get_service(StreamSrvRequest &req, StreamSrvResponse &res) {
+        template<class StreamMsg, class StreamSrv>
+        bool StreamROS<StreamMsg, StreamSrv>::get_service(StreamSrvRequest &req, StreamSrvResponse &res) {
             ROS_INFO_STREAM(this->_log_prefix << "Retrieving streams from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
             res.msgs.clear();
 
@@ -78,8 +85,8 @@ namespace ltm {
             return true;
         }
 
-        template<class StreamType, class StreamSrv>
-        bool StreamROS<StreamType, StreamSrv>::delete_service(StreamSrvRequest &req, StreamSrvResponse &res) {
+        template<class StreamMsg, class StreamSrv>
+        bool StreamROS<StreamMsg, StreamSrv>::delete_service(StreamSrvRequest &req, StreamSrvResponse &res) {
             ROS_INFO_STREAM(this->_log_prefix << "Deleting streams from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
             std::vector<uint32_t>::const_iterator it;
             for (it = req.uids.begin(); it != req.uids.end(); ++it) {

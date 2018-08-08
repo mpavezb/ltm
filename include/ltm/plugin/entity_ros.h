@@ -4,17 +4,18 @@
 #include <ros/ros.h>
 #include <ltm/Episode.h>
 #include <std_srvs/Empty.h>
+#include <ltm/DropDB.h>
 #include <ltm/db/entity_collection.h>
 #include <ltm/util/parameter_server_wrapper.h>
 
 namespace ltm {
     namespace plugin {
 
-        template<class EntityType, class EntitySrv>
-        class EntityROS : public ltm::db::EntityCollectionManager<EntityType> {
+        template<class EntityMsg, class EntitySrv>
+        class EntityROS : public ltm::db::EntityCollectionManager<EntityMsg> {
         private:
             // Entity Types
-            typedef ltm_db::MessageWithMetadata<EntityType> EntityWithMetadata;
+            typedef ltm_db::MessageWithMetadata<EntityMsg> EntityWithMetadata;
             typedef boost::shared_ptr<const EntityWithMetadata> EntityWithMetadataPtr;
 
             // Log Message Types
@@ -39,7 +40,7 @@ namespace ltm {
         private:
             bool status_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
 
-            bool drop_db_service(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+            bool drop_db_service(ltm::DropDB::Request &req, ltm::DropDB::Response &res);
 
             bool add_service(EntitySrvRequest &req, EntitySrvResponse &res);
 
