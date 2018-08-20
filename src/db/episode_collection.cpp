@@ -85,7 +85,7 @@ namespace ltm {
             return true;
         }
 
-        bool EpisodeCollectionManager::query(const std::string &json, ltm::QueryServer::Response &res) {
+        bool EpisodeCollectionManager::query(const std::string &json, ltm::QueryServer::Response &res, bool logging) {
             std::vector<EpisodeWithMetadataPtr> result;
             res.episodes.clear();
             res.entities.clear();
@@ -173,7 +173,7 @@ namespace ltm {
                 res.entities.push_back(q_it->second);
             }
 
-            ROS_INFO_STREAM("Found (" << result.size() << ") matches, with (" << s_cnt << ") instances of ("
+            ROS_INFO_STREAM_COND(logging, "Found (" << result.size() << ") matches, with (" << s_cnt << ") instances of ("
                                       << res.streams.size() << ") streams, and (" << e_cnt << ") instances of ("
                                       << res.entities.size() << ") entities.");
             return true;

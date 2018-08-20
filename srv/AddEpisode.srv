@@ -3,5 +3,6 @@ ltm/Episode episode
 
 # replace if already exists
 bool replace
+bool logging
 ---
 bool succeeded

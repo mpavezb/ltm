@@ -7,6 +7,8 @@ string semantic_type
 
 # json query based on MongoDB style
 string json
+
+bool logging
 ---
 # matching uids
 uint32[] episodes

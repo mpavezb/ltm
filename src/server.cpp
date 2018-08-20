@@ -82,7 +82,7 @@ namespace ltm {
 
     bool Server::query_server_service(ltm::QueryServer::Request &req, ltm::QueryServer::Response &res) {
         if (req.target == "episode") {
-            _db->query(req.json, res);
+            _db->query(req.json, res, req.logging);
             return true;
         } else if (req.target == "entity") {
             _pl->query_entity(req.semantic_type, req.json, res, false);
@@ -176,8 +176,8 @@ namespace ltm {
         // impl
 
         // finish
-        ROS_INFO_STREAM_COND(replace, _log_prefix << "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
-        ROS_INFO_STREAM_COND(!replace, _log_prefix << "ADD: New episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
+        ROS_INFO_STREAM_COND(req.logging && replace, _log_prefix << "ADD: Replacing episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
+        ROS_INFO_STREAM_COND(req.logging && !replace, _log_prefix << "ADD: New episode '" << req.episode.uid << "'. (" << _db->count() << " entries)");
         res.succeeded = (uint8_t) true;
         return true;
     }
