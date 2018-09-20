@@ -1,15 +1,15 @@
-# Episode information
+# Identification
 uint32 uid
 uint8 type
 string[] tags
-string[] children_tags
 ltm/Info info
 
-# Episodic tree information
+# Tree Information
 uint32 parent_id
 uint32[] children_ids
+string[] children_tags
 
-# Episodic LTM information
+# Episode  Information
 ltm/What  what
 ltm/When  when
 ltm/Where where
@@ -20,4 +20,3 @@ ltm/Relevance relevance
 # Available types
 uint8 LEAF=0
 uint8 EPISODE=1
-uint8 CONTEXT=2

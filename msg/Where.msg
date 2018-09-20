@@ -4,8 +4,8 @@ string map_name                # where the pose was recorded
 geometry_msgs/Point position   # 2D position in map
 
 # semantic location information
-string location               # e.g. Living Room
-string area                   # e.g. Arena 1
+string location               # e.g., Living Room
+string area                   # e.g., Arena 1
 
 # children information
 geometry_msgs/Point[] children_hull # Convex Hull for parents
