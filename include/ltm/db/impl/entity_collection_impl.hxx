@@ -262,7 +262,7 @@ namespace ltm {
         }
 
         template<class EntityMsg>
-        bool EntityCollectionManager<EntityMsg>::ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr) {
+        bool EntityCollectionManager<EntityMsg>::ltm_get_last(uint32_t uid, EntityWithMetadataPtr &entity_ptr) {
             QueryPtr query = _coll->createQuery();
             query->append("uid", (int) uid);
             try {
@@ -272,6 +272,93 @@ namespace ltm {
                 entity_ptr.reset();
                 return false;
             }
+            return true;
+        }
+
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_get_diff(uint32_t log_uid, EntityWithMetadataPtr &entity_ptr) {
+            QueryPtr query = _diff_coll->createQuery();
+            query->append("log_uid", (int) log_uid);
+            try {
+                entity_ptr = _diff_coll->findOne(query, false);
+            }
+            catch (const ltm_db::NoMatchingMessageException &exception) {
+                entity_ptr.reset();
+                return false;
+            }
+            return true;
+        }
+
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_retrace(uint32_t uid, const ros::Time &stamp, EntityMsg &entity) {
+            EntityWithMetadataPtr last_entity_ptr;
+            // lookup last information
+            if (!this->ltm_get_last(uid, last_entity_ptr)) {
+                return false;
+            }
+            // TOO EARLY
+            if (stamp < last_entity_ptr->meta.init_stamp) {
+                return false;
+            }
+            // TOO LATE
+            if (stamp >= last_entity_ptr->meta.last_stamp) {
+                entity = *last_entity_ptr;
+                return true;
+            }
+
+            // RETRACE!
+            // Get nearest log (descent order by timestamp)
+            ltm::QueryServer::Response log_resp;
+            double stamp_secs = stamp.sec + stamp.nsec * pow10(-9);
+            std::stringstream log_query_ss;
+            log_query_ss << "{ $query: { entity_uid: " << uid 
+                        << ", timestamp: { $lte: " << std::setprecision(17) << stamp_secs 
+                        << "}}, $orderby: { timestamp: -1}}";
+            // ROS_WARN_STREAM("JSON: " << log_query_ss.str());
+            if(!this->ltm_query_log(log_query_ss.str(), log_resp)) {
+                ROS_ERROR_STREAM("Missing log files for entity (" << uid << ").");
+                return false;
+            }
+            
+            if (log_resp.entities_trail.size() != 1) {
+                ROS_ERROR_STREAM("THIS SHOULD NOT HAPPEN");
+                return false;
+            }
+            if (log_resp.entities_trail[0].uids.empty()) {
+                ROS_ERROR_STREAM("THIS SHOULD NOT HAPPEN");
+                return false;
+            }
+            std::vector<uint32_t> logs = log_resp.entities_trail[0].uids;
+    
+            // get last log
+            ltm::EntityLog recall;
+            uint32_t recall_uid = logs.back();
+            this->ltm_get_log(recall_uid, recall);
+            
+            // build metadata 
+            ltm::EntityMetadata meta;
+            meta = (*last_entity_ptr).meta; // uid, init_log, init_stamp, last_log, last_stamp
+            meta.log_uid = recall_uid;
+            meta.stamp = recall.timestamp;
+
+            // retrace from plugin
+            this->retrace(entity, logs);
+            entity.meta = meta;
+            return true;
+        }
+
+        template<class EntityMsg>
+        bool EntityCollectionManager<EntityMsg>::ltm_get_log(uint32_t uid, LogType &log) {
+            QueryPtr query = _log_coll->createQuery();
+            LogWithMetadataPtr log_ptr;
+            query->append("log_uid", (int) uid);
+            try {
+                log_ptr = _log_coll->findOne(query, false);
+            }
+            catch (const ltm_db::NoMatchingMessageException &exception) {
+                return false;
+            }
+            log = *log_ptr;
             return true;
         }
 
@@ -405,7 +492,19 @@ namespace ltm {
         MetadataPtr EntityCollectionManager<EntityMsg>::ltm_create_metadata(const EntityMsg &entity) {
             MetadataPtr metadata = _coll->createMetadata();
             metadata->append("uid", (int) entity.meta.uid);
+            
+            // log uids
             metadata->append("log_uid", (int) entity.meta.log_uid);
+            metadata->append("init_log", (int) entity.meta.init_log);
+            metadata->append("last_log", (int) entity.meta.last_log);
+
+            // log stamps
+            double stamp = entity.meta.stamp.sec + entity.meta.stamp.nsec * pow10(-9);
+            double init_stamp = entity.meta.init_stamp.sec + entity.meta.init_stamp.nsec * pow10(-9);
+            double last_stamp = entity.meta.last_stamp.sec + entity.meta.last_stamp.nsec * pow10(-9);
+            metadata->append("stamp", stamp);
+            metadata->append("init_stamp", (int) init_stamp);
+            metadata->append("last_stamp", (int) last_stamp);
             return metadata;
         }
 

@@ -5,6 +5,7 @@
 #include <ltm/db/types.h>
 #include <ltm/Episode.h>
 #include <ltm/EntityLog.h>
+#include <ltm/EntityMetadata.h>
 #include <ltm/QueryServer.h>
 
 // get random uid
@@ -78,11 +79,13 @@ namespace ltm {
             bool ltm_log_has(int uid);
             int ltm_get_last_log_uid(uint32_t entity_uid);
             bool ltm_log_insert(const LogType &log);
+            bool ltm_get_log(uint32_t uid, LogType &log);
 
             // DIFF DB Methods
             int ltm_diff_count();
             bool ltm_diff_has(int uid);
             bool ltm_diff_insert(const EntityMsg &diff);
+            bool ltm_get_diff(uint32_t log_uid, EntityWithMetadataPtr &entity_ptr);
 
 
             // ENTITY DB Methods
@@ -90,7 +93,8 @@ namespace ltm {
             void ltm_resetup_db(const std::string &db_name);
             int ltm_count();
             bool ltm_has(int uid);
-            bool ltm_get(uint32_t uid, EntityWithMetadataPtr &entity_ptr);
+            bool ltm_get_last(uint32_t uid, EntityWithMetadataPtr &entity_ptr);
+            bool ltm_retrace(uint32_t uid, const ros::Time &stamp, EntityMsg &entity);
             bool ltm_insert(const EntityMsg &entity);
             bool ltm_query(const std::string& json, ltm::QueryServer::Response &res, bool trail);
             bool ltm_update(uint32_t uid, const EntityMsg &entity);
@@ -102,7 +106,8 @@ namespace ltm {
 
             // Must be provided by the user
             virtual MetadataPtr make_metadata(const EntityMsg &entity) = 0;
-            virtual void update(const EntityMsg &entityType) = 0;
+            virtual void update(const EntityMsg &entity) = 0;
+            virtual void retrace(EntityMsg &entity, const std::vector<uint32_t> &logs) = 0;
         };
 
     }

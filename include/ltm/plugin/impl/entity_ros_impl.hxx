@@ -66,24 +66,39 @@ namespace ltm {
             ROS_INFO_STREAM(this->_log_prefix << "Retrieving entities from collection '" << this->ltm_get_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
             res.msgs.clear();
 
+            // check
             if (!req.stamps.empty() && req.stamps.size() != req.uids.size()) {
                 ROS_WARN_STREAM("Get Service: stamps must be empty or be the same size as the uids field.");
                 return false;
             }
 
+            // build dummy vector if required
+            if (req.stamps.empty()) {
+                ros::Time now = ros::Time::now();
+                for (int i=0; i<req.uids.size(); ++i) {
+                    req.stamps.push_back(now);
+                }
+            }
+
+            // search
             std::vector<uint32_t> visited, not_found;
             std::vector<uint32_t>::const_iterator it;
-            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+            std::vector<ros::Time>::const_iterator t_it;
+            for (it = req.uids.begin(), t_it = req.stamps.begin(); it != req.uids.end(); ++it, ++t_it) {
                 // do not seek repeated msgs
                 if (visited.end() != std::find(visited.begin(), visited.end(), *it)) continue;
                 visited.push_back(*it);
 
-                EntityWithMetadataPtr entity_ptr;
-                if (!this->ltm_get(*it, entity_ptr)) {
+                // lookup
+                // ROS_DEBUG_STREAM("RETRACE: Looking for uid (" << *it << ") at time: " << (*t_it).sec);
+                EntityMsg entity;
+                if (!this->ltm_retrace(*it, *t_it, entity)) {
                     not_found.push_back(*it);
+                    // ROS_DEBUG_STREAM("RETRACE: NOT FOUND");
                     continue;
                 }
-                res.msgs.push_back(*entity_ptr);
+                // ROS_WARN_STREAM("RETRACE: FOUND!");
+                res.msgs.push_back(entity);
             }
             ROS_WARN_STREAM_COND(not_found.size() > 0, this->_log_prefix
                     << "GET: The following requested entities were not found: " << ltm::util::vector_to_str(not_found));
