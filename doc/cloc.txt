@@ -1,0 +1,58 @@
+
+Command:
+Download: 
+https://github.com/AlDanial/cloc/releases/download/v1.76/cloc-1.76.tar.gz
+
+Unpack:
+alias cloc2="/home/mpavezb/programs/cloc-1.76/cloc"
+
+
+
+cloc2 --force-lang="xml",launch --force-lang="C++",hxx --force-lang="yaml",msg --force-lang="yaml",srv  ltm ltm_db ltm_addons ltm_samples bender_ltm bender_emotion
+
+
+--------------------------------------------------------------------------------
+Language                      files          blank        comment           code
+--------------------------------------------------------------------------------
+C++                              32            669            422           3073
+C/C++ Header                     47            667            422           2192
+Python                           37            587            471           1812
+JSON                             12              0              0            321
+CMake                             5            107            219            312
+YAML                              4             30             45             77
+ROS msg,srv                      30             34             72            177
+XML                              17             91             79            213
+Markdown                          8             95              0            183
+Bourne Again Shell                2             21              7             99
+--------------------------------------------------------------------------------
+SUM:                            194           2301           1737           8459
+--------------------------------------------------------------------------------
+
+
+cloc2 --force-lang="xml",launch --force-lang="C++",hxx ltm ltm_db ltm_addons ltm_samples bender_ltm bender_emotion
+
+
+Latex
+
+\begin{figure}[!ht]
+	\centering
+	\begin{tabular}{|l|r|r|r|}
+		\hline
+		\rowcolor{gray!50}
+		Lenguaje & Archivos & Líneas en blanco & Comentarios & Código \\ \hline
+		C++                   &  32  &  669  &  422  &  3073 \\ \hline
+		C/C++ Header          &  47  &  667  &  422  &  2192 \\ \hline
+		Python                &  37  &  587  &  471  &  1812 \\ \hline
+		JSON                  &  12  &    0  &    0  &   321 \\ \hline
+		CMake                 &   5  &  107  &  219  &   312 \\ \hline
+		YAML                  &   4  &   30  &   45  &    77 \\ \hline
+		ROS msg,srv           &  30  &   34  &   72  &   177 \\ \hline
+		XML                   &  17  &   91  &   79  &   213 \\ \hline
+		Markdown              &   8  &   95  &    0  &   183 \\ \hline
+		Bourne Again Shell    &   2  &   21  &    7  &    99 \\ \hline
+		\rowcolor{gray!50}
+		Total                 & 194  & 2301  & 1737  & 8459  \\ \hline	
+	\end{tabular} 
+	\caption{\small Líneas de código del sistema LTM por lenguaje.}
+	\label{table:lineas-codigo}
+\end{figure}
