@@ -126,6 +126,17 @@ namespace ltm {
         }
 
         template<class EntityMsg>
+        int EntityCollectionManager<EntityMsg>::ltm_generate_uid() {
+            // TODO: find better way, maybe select the max_uid+1
+            // Returns a pseudo-random integral number in the range between 0 and RAND_MAX.
+            uint32_t max_int32 = std::numeric_limits<uint32_t>::max();
+            int max_int = std::numeric_limits<int>::max();
+            int upper_bound = max_int32 > max_int ? max_int : max_int32;
+            return rand() % upper_bound;
+        }
+
+
+        template<class EntityMsg>
         int EntityCollectionManager<EntityMsg>::ltm_reserve_log_uid() {
             // TODO: find better way, maybe select the max_uid+1
             // Returns a pseudo-random integral number in the range between 0 and RAND_MAX.
@@ -491,6 +502,7 @@ namespace ltm {
         template<class EntityMsg>
         MetadataPtr EntityCollectionManager<EntityMsg>::ltm_create_metadata(const EntityMsg &entity) {
             MetadataPtr metadata = _coll->createMetadata();
+            // TODO: THIS FIELD NAMES ARE RESERVED!
             metadata->append("uid", (int) entity.meta.uid);
             
             // log uids

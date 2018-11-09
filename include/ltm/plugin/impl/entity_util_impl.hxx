@@ -43,10 +43,11 @@ namespace ltm {
                 if (field_equals<T>(new_e, null_e)) {            // new field is null
                     if (field_equals<T>(curr_e, null_e)) {       // - and curr field is null     ---> NO CHANGES
                         log_e = null_e;
-                    } else {                                     // - and curr field is not null ---> REMOVE FIELD
-                        curr_e = null_e;
-                        log_e = new_e;
-                        log.removed_f.push_back(field);
+                    } else {                                     // - and curr field is not null ---> XXX REMOVE FIELD XXX
+                        log_e = null_e;                          // KEEP WITHOUT CHANGES!.
+                        // curr_e = null_e;
+                        // log_e = new_e;
+                        // log.removed_f.push_back(field);
                     }
                 } else {                                         // new field is not null
                     if (field_equals<T>(curr_e, null_e)) {       // - and curr field is null     ---> NEW FIELD

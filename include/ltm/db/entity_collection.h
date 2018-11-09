@@ -74,6 +74,7 @@ namespace ltm {
             void ltm_get_registry(std::vector<uint32_t> &registry);
 
             // LOG DB Methods
+            int ltm_generate_uid();
             int ltm_reserve_log_uid();
             int ltm_log_count();
             bool ltm_log_has(int uid);
