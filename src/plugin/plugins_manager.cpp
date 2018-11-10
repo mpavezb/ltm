@@ -61,12 +61,16 @@ namespace ltm {
 
         void PluginsManager::collect(uint32_t uid, ltm::Episode &episode) {
             EpisodeRegister reg = registry[uid];
+            ROS_DEBUG_STREAM(" - plugin manager: collecting information...");
+            ROS_DEBUG_STREAM(" - plugin manager: gather location: " << reg.gather_location);
+            ROS_DEBUG_STREAM(" - plugin manager: gather emotion: " << reg.gather_emotion);
+            ROS_DEBUG_STREAM(" - plugin manager: gather streams: " << reg.gather_streams);
+            ROS_DEBUG_STREAM(" - plugin manager: gather entities: " << reg.gather_entities);
             reg.end = ros::Time::now();
             if (reg.gather_location) _location_manager->collect(uid, episode.where);
             if (reg.gather_emotion)  _emotion_manager->collect(uid, episode.relevance.emotional);
             if (reg.gather_streams) _streams_manager->collect(uid, episode.what, reg.start, reg.end);
             if (reg.gather_entities) _entities_manager->collect(uid, episode.what, reg.start, reg.end);
-            unregister_episode(uid);
         }
 
         void PluginsManager::drop_db() {

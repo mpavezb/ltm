@@ -119,8 +119,8 @@ namespace ltm {
         }
         res.uid = (uint32_t) value;
 
-        // Only LEAVES get registered on plugins
-        if (value >= 0 && req.is_leaf) {
+        // REGISTER ALL EPISODES: Cannot exclude leaves, as the episode type can be unknown at this time!
+        if (value >= 0) {
             ltm::plugin::EpisodeRegister reg;
             reg.gather_emotion = req.gather_emotion;
             reg.gather_location = req.gather_location;
@@ -146,10 +146,13 @@ namespace ltm {
 
     bool Server::add_episode_service(ltm::AddEpisode::Request &req, ltm::AddEpisode::Response &res) {
         bool replace = false;
+        ROS_DEBUG_STREAM("ADD: Episode '" << req.episode.uid << "'");
         if (req.episode.type == ltm::Episode::LEAF) {
             // only collect information for LEAFs
+            ROS_DEBUG_STREAM("ADD: as LEAF '" << req.episode.uid << "'");
             _pl->collect(req.episode.uid, req.episode);
         } else if (req.episode.type == ltm::Episode::EPISODE) {
+            ROS_DEBUG_STREAM("ADD: as NODE '" << req.episode.uid << "'");
             // update node based on its children
             // THIS REQUIRES THE CHILDREN_IDS FIELD TO BE SET UP.
             // TODO: rework design to not require this field. It can be built automatically while adding children.
@@ -158,6 +161,7 @@ namespace ltm {
             ROS_ERROR_STREAM("Unsupported episode type: " << (uint32_t) req.episode.type);
             return false;
         }
+        _pl->unregister_episode(req.episode.uid);
 
         // insert episode
         if (_db->has(req.episode.uid)) {
