@@ -7,8 +7,6 @@ uint32[] episode_uids
 
 # when
 time timestamp
-uint32 prev_log
-uint32 next_log
 
 # what
 string[] new_f

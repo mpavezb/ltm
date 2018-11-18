@@ -49,6 +49,7 @@ add_service_files(
     AddEpisode.srv
     DropDB.srv
     GetEpisodes.srv
+    GetEntityLogs.srv
     QueryServer.srv
     RegisterEpisode.srv
     SwitchDB.srv

@@ -10,26 +10,28 @@ alias cloc2="/home/mpavezb/programs/cloc-1.76/cloc"
 
 cloc2 --force-lang="xml",launch --force-lang="C++",hxx --force-lang="yaml",msg --force-lang="yaml",srv  ltm ltm_db ltm_addons ltm_samples bender_ltm bender_emotion
 
+cloc2 --force-lang="xml",launch --force-lang="C++",hxx ltm ltm_db ltm_addons ltm_samples bender_ltm bender_emotion
 
 --------------------------------------------------------------------------------
 Language                      files          blank        comment           code
 --------------------------------------------------------------------------------
-C++                              32            669            422           3073
-C/C++ Header                     47            667            422           2192
-Python                           37            587            471           1812
+C++                              37            831            575           3896
+Python                           57           1078            792           3646
+C/C++ Header                     51            716            435           2397
+CMake                             8            135            294            380
+XML                              29            190            178            373
 JSON                             12              0              0            321
-CMake                             5            107            219            312
-YAML                              4             30             45             77
-ROS msg,srv                      30             34             72            177
-XML                              17             91             79            213
-Markdown                          8             95              0            183
-Bourne Again Shell                2             21              7             99
+Markdown                         10            145              0            245
+ROS msg,srv                      34             43             90            217
+Bourne Again Shell                5             37             22            183
+JavaScript                        1             30             45            133
+YAML                              5             43             70            111
 --------------------------------------------------------------------------------
-SUM:                            194           2301           1737           8459
+SUM:                            249           3248           2501          11902
 --------------------------------------------------------------------------------
 
 
-cloc2 --force-lang="xml",launch --force-lang="C++",hxx ltm ltm_db ltm_addons ltm_samples bender_ltm bender_emotion
+
 
 
 Latex

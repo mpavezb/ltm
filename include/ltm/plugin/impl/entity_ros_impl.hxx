@@ -28,6 +28,7 @@ namespace ltm {
             _add_entity_service = priv.advertiseService(ns + "add", &EntityROS<EntityMsg, EntitySrv>::add_service, this);
             _get_entity_service = priv.advertiseService(ns + "get", &EntityROS<EntityMsg, EntitySrv>::get_service, this);
             _delete_entity_service = priv.advertiseService(ns + "delete", &EntityROS<EntityMsg, EntitySrv>::delete_service, this);
+            _get_entity_logs_service = priv.advertiseService(ns + "get_logs", &EntityROS<EntityMsg, EntitySrv>::get_logs_service, this);
         }
 
         template<class EntityMsg, class EntitySrv>
@@ -117,6 +118,30 @@ namespace ltm {
                 this->ltm_remove(*it);
             }
             return true;
+        }
+
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::get_logs_service(ltm::GetEntityLogs::Request &req, ltm::GetEntityLogs::Response &res) {
+            ROS_INFO_STREAM(this->_log_prefix << "Retrieving entity logs from collection '" << this->ltm_get_log_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
+            res.logs.clear();
+
+            // TODO: do domething about repeated logs
+
+            // search
+            std::vector<uint32_t>::const_iterator it;
+            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+
+                uint32_t log_uid = *it;
+                
+                // lookup
+                ltm::EntityLog log;
+                if (!this->ltm_get_log(log_uid, log)) {
+                    ROS_WARN_STREAM(this->_log_prefix << "get_logs service: EntityLog with uid (" << log_uid << ") not found on collection '" << this->ltm_get_log_collection_name() << "'.");
+                    continue;
+                }
+                res.logs.push_back(log);
+            }
+            return true;            
         }
     }
 }

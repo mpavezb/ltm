@@ -18,6 +18,11 @@ namespace ltm {
         }
 
         template<class EntityMsg>
+        std::string EntityCollectionManager<EntityMsg>::ltm_get_log_collection_name() {
+            return _log_collection_name;
+        }
+
+        template<class EntityMsg>
         std::string EntityCollectionManager<EntityMsg>::ltm_get_db_name() {
             return _db_name;
         }
@@ -339,6 +344,7 @@ namespace ltm {
                 ROS_ERROR_STREAM("THIS SHOULD NOT HAPPEN");
                 return false;
             }
+            // TODO: THIS ASSUMES LOGS ARE ORDERED BY DATE!
             std::vector<uint32_t> logs = log_resp.entities_trail[0].uids;
     
             // get last log
@@ -534,8 +540,6 @@ namespace ltm {
             // WHEN
             double timestamp = log.timestamp.sec + log.timestamp.nsec * pow10(-9);
             meta->append("timestamp", timestamp);
-            meta->append("prev_log", (int) log.prev_log);
-            meta->append("next_log", (int) log.next_log);
 
             // WHAT
             meta->append("new_f", log.new_f);

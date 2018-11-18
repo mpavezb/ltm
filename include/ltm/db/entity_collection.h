@@ -64,6 +64,7 @@ namespace ltm {
             std::string _log_prefix;
             std::string ltm_get_type();
             std::string ltm_get_collection_name();
+            std::string ltm_get_log_collection_name();
             std::string ltm_get_status();
             std::string ltm_get_db_name();
 
