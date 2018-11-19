@@ -23,6 +23,11 @@ namespace ltm {
         }
 
         template<class EntityMsg>
+        std::string EntityCollectionManager<EntityMsg>::ltm_get_diff_collection_name() {
+            return _diff_collection_name;
+        }   
+
+        template<class EntityMsg>
         std::string EntityCollectionManager<EntityMsg>::ltm_get_db_name() {
             return _db_name;
         }

@@ -29,6 +29,7 @@ namespace ltm {
             _get_entity_service = priv.advertiseService(ns + "get", &EntityROS<EntityMsg, EntitySrv>::get_service, this);
             _delete_entity_service = priv.advertiseService(ns + "delete", &EntityROS<EntityMsg, EntitySrv>::delete_service, this);
             _get_entity_logs_service = priv.advertiseService(ns + "get_logs", &EntityROS<EntityMsg, EntitySrv>::get_logs_service, this);
+            _get_entity_trail_service = priv.advertiseService(ns + "get_trail", &EntityROS<EntityMsg, EntitySrv>::get_trail_service, this);
         }
 
         template<class EntityMsg, class EntitySrv>
@@ -101,6 +102,7 @@ namespace ltm {
                 // ROS_WARN_STREAM("RETRACE: FOUND!");
                 res.msgs.push_back(entity);
             }
+            res.not_found = not_found;
             ROS_WARN_STREAM_COND(not_found.size() > 0, this->_log_prefix
                     << "GET: The following requested entities were not found: " << ltm::util::vector_to_str(not_found));
             return true;
@@ -142,6 +144,42 @@ namespace ltm {
                 res.logs.push_back(log);
             }
             return true;            
+        }
+
+        template<class EntityMsg, class EntitySrv>
+        bool EntityROS<EntityMsg, EntitySrv>::get_trail_service(EntitySrvRequest &req, EntitySrvResponse &res) {
+            ROS_INFO_STREAM(this->_log_prefix << "Retrieving entity trails from collection '" << this->ltm_get_diff_collection_name() << "': " << ltm::util::vector_to_str(req.uids));
+            res.msgs.clear();
+
+            // check
+            if (!req.stamps.empty()) {
+                ROS_WARN_STREAM("Get Trail Service: stamps are not considered for this service.");
+            }
+
+            // search
+            std::vector<uint32_t> visited, not_found;
+            std::vector<uint32_t>::const_iterator it;
+            std::vector<ros::Time>::const_iterator t_it;
+            for (it = req.uids.begin(); it != req.uids.end(); ++it) {
+                uint32_t log_uid = *it;
+
+                // do not seek repeated msgs
+                if (visited.end() != std::find(visited.begin(), visited.end(), log_uid)) continue;
+                visited.push_back(log_uid);
+
+                // lookup
+                EntityWithMetadataPtr diff;
+                if (!this->ltm_get_diff(log_uid, diff)) {
+                    ROS_WARN_STREAM(this->_log_prefix << "Could not find trail with uid (" << log_uid << ") in collection '" << this->ltm_get_diff_collection_name() << "'");
+                    not_found.push_back(log_uid);
+                    continue;
+                }
+                res.msgs.push_back(*diff);
+            }
+            res.not_found = not_found;
+            ROS_WARN_STREAM_COND(not_found.size() > 0, this->_log_prefix
+                    << "GET: The following requested entities were not found: " << ltm::util::vector_to_str(not_found));
+            return true;
         }
     }
 }

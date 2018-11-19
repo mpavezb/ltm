@@ -33,6 +33,7 @@ namespace ltm {
             ros::ServiceServer _add_entity_service;
             ros::ServiceServer _get_entity_service;
             ros::ServiceServer _get_entity_logs_service;
+            ros::ServiceServer _get_entity_trail_service;
             ros::ServiceServer _delete_entity_service;
 
         public:
@@ -52,6 +53,8 @@ namespace ltm {
             bool delete_service(EntitySrvRequest &req, EntitySrvResponse &res);
 
             bool get_logs_service(ltm::GetEntityLogs::Request &req, ltm::GetEntityLogs::Response &res);
+
+            bool get_trail_service(EntitySrvRequest &req, EntitySrvResponse &res);
 
         };
     }
