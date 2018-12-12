@@ -85,9 +85,9 @@ namespace ltm {
 
         template<class EntityMsg>
         void EntityCollectionManager<EntityMsg>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
-            _collection_name = "entity:" + collection_name;
-            _log_collection_name = "entity:" + collection_name + ".meta";
-            _diff_collection_name = "entity:" + collection_name + ".trail";
+            _collection_name = "entity." + collection_name;
+            _log_collection_name = "entity." + collection_name + ".meta";
+            _diff_collection_name = "entity." + collection_name + ".trail";
             _type = type;
             _conn = db_ptr;
             this->ltm_resetup_db(db_name);

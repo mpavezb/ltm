@@ -53,7 +53,7 @@ namespace ltm {
 
         template<class StreamMsg>
         void StreamCollectionManager<StreamMsg>::ltm_setup_db(DBConnectionPtr db_ptr, std::string db_name, std::string collection_name, std::string type) {
-            _collection_name = "stream:" + collection_name;
+            _collection_name = "stream." + collection_name;
             _type = type;
             _conn = db_ptr;
             this->ltm_resetup_db(db_name);
