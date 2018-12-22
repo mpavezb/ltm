@@ -1,30 +1,33 @@
-
-# Lista de trabajo propuesto a futuro.
-
-
-### Representación episódica
-
-- Where: Crear submensaje para Where.msg, que almacene: location, area, time
-- Where: Soportar más de 1 lugar semántico y coordenado para hijos.
-- Where: agregar soporte a más de un frame/mapa
-- Where: Crear submensaje para Where.msg, que represente ubicación coordenada múltiple
-- Optimización: condición de que hijos son ordenados por tiempo de inicio
-- Asignación creciente de IDS para episodios, streams y entidades.
-
-### Funcionalidad
-
-- Modificación de la estructura de mensajes semánticos
-- como manejar contextos, pues se puede requerir su información, incluso durante el mismo episodio!!.. deben ser almacenados una vez inscritos y ser cerrados manualmente.
+# Proposed work for future releases
 
 
-### API ROS
+## Documentation
 
-- Quitar servicios incompletos.. 
+- Inline documentation for methods.
+- ROS API documentation.
+- Pluginlib documentation.
 
 
-### API plugins
+## Usability
 
-### Herramientas
+- Clean up terminology for methods and API.
+- Manage Where.msg information as an entity. The location message should be defined by the user, and kept on its own collection.
 
-- Server con warning si mensaje a almacenar pesa más del límite!.
-- LTM server con warning en texto y notificación inotify cuando quede poco espacio de disco (menor a X%) (o se ha ocupado más de X GB) debido al server... configurable por usuario...
+
+## Functionality
+
+- Database migration for updated entities (avoid losing old DB entries).
+- Automatical updates for the historical and generical relevances.
+- Server with warnings when resource usage reaches the available limits.
+
+
+## Maintainability
+
+- Migrate the `ltm_db` and `ltm` mongo interface from the legacy C++ driver to the latest version (v3.3 at the moment).
+
+
+## Scalability and Efficiency
+
+- Disk usage mitigation.
+- Streams degradation.
+- MongoDB queries analysis.
