@@ -9,7 +9,7 @@ Also, the `ltm_addons` package depends on the SMACH ROS packages.
 
 These dependencies can be installed using: 
 
-```(bash)
-$ roscd ltm
-$ bash install/install.bash
+```bash
+roscd ltm
+bash install/install.bash
 ```
